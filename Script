@@ -505,7 +505,7 @@ end
 local mouse_location = user_input_service:GetMouseLocation()
 local current_target: BasePart
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/fathater21211/v.1hgj44321223gen4322111/refs/heads/main/UI?token=GHSAT0AAAAAADCNLTVAYOZCY3VP6VYFUIXW2AFAKQA"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/fathater21211/v.1hgj44321223gen4322111/refs/heads/main/UI"))()
 local start_tick = tick()
 
 local Window = Library:Window({
