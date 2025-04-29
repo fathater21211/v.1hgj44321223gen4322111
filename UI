@@ -804,7 +804,7 @@ do
 		Objects["shadow"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		Objects["shadow"].Size = UDim2.new(1, 75, 1, 75)
 		Objects["shadow"].AnchorPoint = Vector2.new(0.5, 0.5)
-		Objects["shadow"].Image = getcustomasset(Library.FolderName .. "/Utilities/Shadow.png");
+		
 		Objects["shadow"].BackgroundTransparency = 1
 		Objects["shadow"].Position = UDim2.new(0.5, 0, 0.5, 0)
 		Objects["shadow"].SliceScale = 0.75
