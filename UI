@@ -25,7 +25,7 @@ do
 		Border = Color3.fromRGB(30,144,255);
 		Risky = Color3.fromRGB(173,216,230);
 
-		FolderName = "Fishy";
+		FolderName = "RevWare";
 
 		Key = Enum.KeyCode.RightShift;
 		Open = true;
