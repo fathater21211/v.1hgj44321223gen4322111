@@ -818,10 +818,6 @@ do
 
 	local old_ranges = {}
 
-
-	
-
-
 	local melee_range_callback = function()
 		local value = Library.Flags["extend melee range"]:Get()
 
@@ -844,9 +840,6 @@ do
 			end
 		end
 	end
-
-
-	
 
 	melee_section:Toggle({
 		Name = "extend melee range",
@@ -2064,107 +2057,6 @@ workspace.DescendantAdded:Connect(function(descendant)
 	end
 end)
 
-local function ManipulationReset()
-    remake.enabled = false
-    if remake.startReplica then
-        remake.startReplica:Destroy()
-        remake.startReplica = nil
-    end
-    remake.distanceText.Visible = false
-    if remake.character and remake.character:FindFirstChild("HumanoidRootPart") then
-        remake.character.HumanoidRootPart.Anchored = false
-    end
-end
-
-local function updateCharacterReferences()
-    remake.character = local_player.Character or local_player.CharacterAdded:Wait()
-    remake.character:WaitForChild("HumanoidRootPart")
-    remake.character:WaitForChild("Humanoid")
-
-    if remake.diedConnection then
-        remake.diedConnection:Disconnect()
-    end
-    remake.diedConnection = remake.character.Humanoid.Died:Connect(ManipulationReset)
-end
-
-updateCharacterReferences()
-local_player.CharacterAdded:Connect(function()
-    ManipulationReset()
-    updateCharacterReferences()
-end)
-
-exploits_section:Toggle({
-	Name = "Manip",
-	Flag = "zins_Enabled",
-	Default = false,
-	Callback = function(val)
-		Flags["zins_Enabled"] = val
-		if not val then
-			ManipulationReset()
-		end
-	end,
-})
-
-Manip_toggle:Keybind({
-    Flag = "zins_keybind",
-    Name = "Keybind",
-    Default = Enum.KeyCode.F,
-    Mode = "Toggle",
-    })
-end
-
-runService.RenderStepped:Connect(function(deltaTime)
-
-    if Flags["zins_Enabled"] and Flags["zins_keybind"] then
-        if not remake.enabled then
-            remake.enabled        = true
-            local root            = remake.character:FindFirstChild("HumanoidRootPart")
-            if root then
-                root.Anchored        = true
-                remake.startPosition = root.Position
-                remake.remakePosition= root.Position
-                remake.startReplica  = createClone(remake.character, FORCEFIELD_COLOR)
-                if SHOW_DISTANCE_TEXT then
-                    remake.distanceText.Visible = true
-                end
-            end
-        end
-    else
-        if remake.enabled then
-            ManipulationReset()
-        end
-    end
-
-    if remake.enabled then
-        local root = remake.character and remake.character:FindFirstChild("HumanoidRootPart")
-        if root then
-            local dir = Vector3.new()
-            if uis:IsKeyDown(Enum.KeyCode.W) then dir += Vector3.new(0,0,-1) end
-            if uis:IsKeyDown(Enum.KeyCode.A) then dir += Vector3.new(-1,0,0) end
-            if uis:IsKeyDown(Enum.KeyCode.S) then dir += Vector3.new(0,0,1) end
-            if uis:IsKeyDown(Enum.KeyCode.D) then dir += Vector3.new(1,0,0) end
-
-            if dir.Magnitude > 0 then
-                dir = dir.Unit * WALK_SPEED * deltaTime
-            end
-
-            local newPos = root.Position + root.CFrame:VectorToWorldSpace(dir)
-            local dist   = (newPos - remake.startPosition).Magnitude
-            if dist > MAX_DISTANCE then
-                newPos = remake.startPosition + (newPos - remake.startPosition).Unit * MAX_DISTANCE
-            end
-
-            root.CFrame = CFrame.new(newPos)
-            remake.remakePosition = newPos
-
-            if SHOW_DISTANCE_TEXT then
-                local d = (remake.remakePosition - remake.startPosition).Magnitude
-                remake.distanceText.Text  = string.format("Manipulating: %.2f", d)
-                remake.distanceText.Color = Color3.new(1,1,1)
-            end
-        end
-    end
-end)
 
     exploits_section:Toggle({
         Name = "Underground (V to use)",
@@ -2219,20 +2111,6 @@ end)
     end)
     
     
-            end
-        end,
-    })
-
-    exploits_section:Toggle({
-        Name = "Always Grounded",
-        Flag = "AGR",
-        Default = false,
-        Callback = function()
-            local value = Library.Flags["AGR"]:Get()
-    
-            if value then
-        
-           
             end
         end,
     })
@@ -4867,9 +4745,8 @@ run_service.RenderStepped:Connect(function()
 	)
 end)
 
-
-
 Library:Notify(string.format("[🕰️🏎️📈RevWare ] loaded in %.1f", tick() - start_tick), 10, Library.Accent)
 
 Library:Notify(string.format("[🕰️🏎️📈RevWare ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick), 10, Library.Accent)
+end
 end
