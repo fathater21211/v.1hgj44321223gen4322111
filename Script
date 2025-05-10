@@ -417,6 +417,9 @@ end, function(err)
 	local_player:Kick(err)
 end)
 
+
+
+
 local VMs = replicated_storage:FindFirstChild("VMs")
 if not VMs then
 	return local_player:Kick("no vms found!")
@@ -815,6 +818,10 @@ do
 
 	local old_ranges = {}
 
+
+	
+
+
 	local melee_range_callback = function()
 		local value = Library.Flags["extend melee range"]:Get()
 
@@ -837,6 +844,9 @@ do
 			end
 		end
 	end
+
+
+	
 
 	melee_section:Toggle({
 		Name = "extend melee range",
@@ -1536,6 +1546,8 @@ do
 		Default = false,
 	})
 
+	
+
 	visuals_misc_section:Toggle({
 		Name = "fullbright",
 		Flag = "fullbright",
@@ -1915,6 +1927,318 @@ do
 			end
 		end,
 	})
+
+
+	local head_hit_sounds = {
+		Neverlose = "rbxassetid://8726881116",
+		Gamesense = "rbxassetid://4817809188",
+		Rust = "rbxassetid://1255040462",
+		TF2 = "rbxassetid://2868331684",
+		["Among Us"] = "rbxassetid://5700183626",
+		Minecraft = "rbxassetid://4018616850",
+		["CS:GO"] = "rbxassetid://6937353691",
+		Osu = "rbxassetid://7149255551",
+		["TF2 Critical"] = "rbxassetid://296102734",
+		Bat = "rbxassetid://3333907347",
+		["Call of Duty"] = "rbxassetid://5952120301",
+		Pop = "rbxassetid://198598793",
+		Bruh = "rbxassetid://4275842574",
+		Bamboo = "rbxassetid://3769434519",
+		["Old Fatality"] = "rbxassetid://6607142036",
+		Mario = "rbxassetid://2815207981",
+		Steve = "rbxassetid://4965083997"
+	}
+
+
+	local hitsounds = {
+		head_hitsounds = {
+			enabled = false,
+		},
+	}
+do
+
+
+local hitsound_settings = {
+	head = {
+		enabled = false,
+		volume = 2,
+		selection = "Rust"
+	},
+} 
+
+
+
+
+do
+exploits_section:Toggle({
+	Name = " Sound Enabled",
+	Flag = "HitSoundsHeadEnabled_Toggle",
+	Default = false,
+	Callback = function()
+		local value = Library.Flags["hitsound_settings.head.enabled"]:Get()
+
+		if not value then
+			
+   game:GetService("SoundService").HitHead.Volume = 0.800000011920929
+                        game:GetService("SoundService").HitHead.SoundId = "rbxassetid://988593556"
+		end
+	end,
+})
+
+exploits_section:Listbox({ Flag = "HitSoundsHead_Sound", Options = {'Neverlose','Gamesense','Rust','TF2','Among Us','Minecraft','CS:GO','Osu','TF2 Critical','Bat','Call of Duty','Pop','Bruh','Bamboo','Old Fatality','Mario','Steve'}, })
+	exploits_section:Textbox({
+	Name = "Sound",
+	Flag = "HitSoundsHead_Sound",
+	Placeholder = "Type here...",
+	Compact = true,
+	Default = "",
+	Callback = function()
+		if hitsound_settings.head.enabled then
+			game:GetService("SoundService").HitHead.SoundId = hit_sounds[Value]
+			game:GetService("SoundService").HitHead:Play()
+		else
+			game:GetService("SoundService").HitHead.SoundId = "rbxassetid://988593556"
+			game:GetService("SoundService").HitHead.Volume = 0.800000011920929
+			
+  
+		end
+	end,
+})
+
+
+exploits_section:Toggle({
+	Name = " Always Sprint ",
+	Flag = "Always Sprint",
+	Default = false,
+	Callback = function()
+		local value = Library.Flags["Always Sprint"]:Get()
+
+		if not value then
+			
+			if Flags["Always Sprint"] then
+				local plr_model = local_char or local_player.Character
+				if plr_model and plr_model:FindFirstChild("HumanoidRootPart") then
+					local root = plr_model.HumanoidRootPart
+					local camera = workspace.CurrentCamera
+					local uis = game:GetService("UserInputService")
+		
+					if root and camera then
+						local dir = Vector3.new()
+						local look = camera.CFrame.LookVector
+		
+						local movementKeys = {
+							[Enum.KeyCode.W] = Vector3.new(look.X, 0, look.Z),
+							[Enum.KeyCode.A] = Vector3.new(look.Z, 0, -look.X),
+							[Enum.KeyCode.S] = Vector3.new(-look.X, 0, -look.Z),
+							[Enum.KeyCode.D] = Vector3.new(-look.Z, 0, look.X)
+						}
+		
+						for key, vector in pairs(movementKeys) do
+							if uis:IsKeyDown(key) then
+								dir += vector
+							end
+						end
+		
+						if dir.Magnitude > 0 then
+							dir = dir.Unit * 27  -- Normalize and apply speed
+		
+							-- Preserve Y velocity
+							root.AssemblyLinearVelocity = Vector3.new(dir.X, root.AssemblyLinearVelocity.Y, dir.Z)
+						end
+					end
+				end
+			end
+		end
+	end,
+})
+
+   
+
+
+
+workspace.DescendantAdded:Connect(function(descendant)
+	local value = Library.Flags["no trap touch parts"]:Get()
+	if descendant:IsA("BasePart") and descendant.Name == "TouchCollision" and value then
+		insert_part(stored_trap_parts, descendant, descendant.Parent)
+		descendant.Parent = core_gui
+	end
+end)
+
+local function ManipulationReset()
+    remake.enabled = false
+    if remake.startReplica then
+        remake.startReplica:Destroy()
+        remake.startReplica = nil
+    end
+    remake.distanceText.Visible = false
+    if remake.character and remake.character:FindFirstChild("HumanoidRootPart") then
+        remake.character.HumanoidRootPart.Anchored = false
+    end
+end
+
+local function updateCharacterReferences()
+    remake.character = local_player.Character or local_player.CharacterAdded:Wait()
+    remake.character:WaitForChild("HumanoidRootPart")
+    remake.character:WaitForChild("Humanoid")
+
+    if remake.diedConnection then
+        remake.diedConnection:Disconnect()
+    end
+    remake.diedConnection = remake.character.Humanoid.Died:Connect(ManipulationReset)
+end
+
+updateCharacterReferences()
+local_player.CharacterAdded:Connect(function()
+    ManipulationReset()
+    updateCharacterReferences()
+end)
+
+exploits_section:Toggle({
+	Name = "Manip",
+	Flag = "zins_Enabled",
+	Default = false,
+	Callback = function(val)
+		Flags["zins_Enabled"] = val
+		if not val then
+			ManipulationReset()
+		end
+	end,
+})
+
+Manip_toggle:Keybind({
+    Flag = "zins_keybind",
+    Name = "Keybind",
+    Default = Enum.KeyCode.F,
+    Mode = "Toggle",
+    })
+end
+
+runService.RenderStepped:Connect(function(deltaTime)
+
+    if Flags["zins_Enabled"] and Flags["zins_keybind"] then
+        if not remake.enabled then
+            remake.enabled        = true
+            local root            = remake.character:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.Anchored        = true
+                remake.startPosition = root.Position
+                remake.remakePosition= root.Position
+                remake.startReplica  = createClone(remake.character, FORCEFIELD_COLOR)
+                if SHOW_DISTANCE_TEXT then
+                    remake.distanceText.Visible = true
+                end
+            end
+        end
+    else
+        if remake.enabled then
+            ManipulationReset()
+        end
+    end
+
+    if remake.enabled then
+        local root = remake.character and remake.character:FindFirstChild("HumanoidRootPart")
+        if root then
+            local dir = Vector3.new()
+            if uis:IsKeyDown(Enum.KeyCode.W) then dir += Vector3.new(0,0,-1) end
+            if uis:IsKeyDown(Enum.KeyCode.A) then dir += Vector3.new(-1,0,0) end
+            if uis:IsKeyDown(Enum.KeyCode.S) then dir += Vector3.new(0,0,1) end
+            if uis:IsKeyDown(Enum.KeyCode.D) then dir += Vector3.new(1,0,0) end
+
+            if dir.Magnitude > 0 then
+                dir = dir.Unit * WALK_SPEED * deltaTime
+            end
+
+            local newPos = root.Position + root.CFrame:VectorToWorldSpace(dir)
+            local dist   = (newPos - remake.startPosition).Magnitude
+            if dist > MAX_DISTANCE then
+                newPos = remake.startPosition + (newPos - remake.startPosition).Unit * MAX_DISTANCE
+            end
+
+            root.CFrame = CFrame.new(newPos)
+            remake.remakePosition = newPos
+
+            if SHOW_DISTANCE_TEXT then
+                local d = (remake.remakePosition - remake.startPosition).Magnitude
+                remake.distanceText.Text  = string.format("Manipulating: %.2f", d)
+                remake.distanceText.Color = Color3.new(1,1,1)
+            end
+        end
+    end
+end)
+
+    exploits_section:Toggle({
+        Name = "Underground (V to use)",
+        Flag = "Underground",
+        Default = false,
+        Callback = function()
+            local value = Library.Flags["Underground"]:Get()
+    
+            if value then
+             --underground antiaim for fallen leaked 
+    getgenv().underground = -1.9
+    
+    local enabled = false
+    local runserv = game:GetService("RunService")
+    local lplr = game:GetService("Players").LocalPlayer
+    local mouse = lplr:GetMouse()
+    local animation = Instance.new("Animation")
+    animation.AnimationId = "rbxassetid://13435049596"
+    local danceTrack
+    mouse.KeyDown:Connect(function(key)
+        if key == string.lower("v") then
+            pcall(function()
+                if enabled == false then
+                    enabled = true
+                    danceTrack = lplr.Character:FindFirstChildWhichIsA("Humanoid"):LoadAnimation(animation)
+                    danceTrack.Looped = true
+                    danceTrack:Play()
+                elseif enabled then
+                    enabled = false
+                    danceTrack:Stop()
+                    danceTrack:Destroy()
+                end
+            end)
+        end
+    end)
+    local dysenc = {}
+    local temp = 1
+    runserv.Heartbeat:Connect(function()
+        temp = temp + 1
+        if enabled and lplr.Character and lplr.Character.HumanoidRootPart then
+            dysenc[1] = lplr.Character.HumanoidRootPart.CFrame
+            dysenc[2] = lplr.Character.HumanoidRootPart.AssemblyLinearVelocity
+            local SpoofThis = lplr.Character.HumanoidRootPart.CFrame
+            SpoofThis = (SpoofThis + Vector3.new(0, getgenv().underground, 0)) * CFrame.Angles(0, 0, 0)
+            lplr.Character.HumanoidRootPart.CFrame = SpoofThis
+            runserv.RenderStepped:Wait()
+            if lplr.Character and lplr.Character.HumanoidRootPart then
+                lplr.Character.HumanoidRootPart.CFrame = dysenc[1]
+                lplr.Character.HumanoidRootPart.AssemblyLinearVelocity = dysenc[2]
+            end
+        end
+    end)
+    
+    
+            end
+        end,
+    })
+
+    exploits_section:Toggle({
+        Name = "Always Grounded",
+        Flag = "AGR",
+        Default = false,
+        Callback = function()
+            local value = Library.Flags["AGR"]:Get()
+    
+            if value then
+        
+           
+            end
+        end,
+    })
+
+
+
 
 	workspace.DescendantAdded:Connect(function(descendant)
 		local value = Library.Flags["no trap touch parts"]:Get()
@@ -4509,6 +4833,8 @@ run_service.RenderStepped:Connect(function()
 			end
 		end
 
+       
+
 		if quick_stack_funcs and #quick_stack_funcs > 0 then
 			for _, func in quick_stack_funcs do
 				local instant_loot = Library.Flags["instant loot"]:Get()
@@ -4541,5 +4867,9 @@ run_service.RenderStepped:Connect(function()
 	)
 end)
 
+
+
 Library:Notify(string.format("[🕰️🏎️📈RevWare ] loaded in %.1f", tick() - start_tick), 10, Library.Accent)
 
+Library:Notify(string.format("[🕰️🏎️📈RevWare ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick), 10, Library.Accent)
+end
