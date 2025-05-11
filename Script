@@ -1,11 +1,3 @@
---v1--
---[[
-
-   credits to Exeternal/Plasma,
-
-]]
-
-
 if not LPH_OBFUSCATED then
 	function LPH_NO_VIRTUALIZE(f)
 		return f
@@ -40,13 +32,13 @@ local clone_reference = cloneref or function(...) -- i need to cloneref stuf fso
 	return ...
 end
 
-local players: Players = clone_reference(game:GetService("Players"))
-local run_service: RunService = clone_reference(game:GetService("RunService"))
-local replicated_storage: ReplicatedStorage = clone_reference(game:GetService("ReplicatedStorage"))
-local user_input_service: UserInputService = clone_reference(game:GetService("UserInputService"))
-local lighting: Lighting = clone_reference(game:GetService("Lighting"))
-local core_gui: CoreGui = clone_reference(game:GetService("CoreGui"))
-local http_service: HttpService = clone_reference(game:GetService("HttpService"))
+local players = clone_reference(game:GetService("Players"))
+local run_service = clone_reference(game:GetService("RunService"))
+local replicated_storage = clone_reference(game:GetService("ReplicatedStorage"))
+local user_input_service = clone_reference(game:GetService("UserInputService"))
+local lighting = clone_reference(game:GetService("Lighting"))
+local core_gui = clone_reference(game:GetService("CoreGui"))
+local http_service = clone_reference(game:GetService("HttpService"))
 
 local local_player = players.LocalPlayer
 
@@ -75,7 +67,7 @@ do
 	end
 end
 
-xpcall(function()
+xpcall(LPH_NO_VIRTUALIZE(function()
 	local done = false
 	local id, channel = create_comm_channel()
 	channel.Event:Connect(function()
@@ -412,7 +404,7 @@ xpcall(function()
 			task.wait()
 		until done
 	end
-end, function(err)
+end), function(err)
 	print("corescript", err)
 	local_player:Kick(err)
 end)
@@ -502,18 +494,18 @@ bindable_event.Event.Connect = function(_, callback)
 	table.insert(bindable_event.Functions, callback)
 end
 
-local mouse_location = user_input_service:GetMouseLocation()
-local current_target: BasePart
+loadstring(game:HttpGet("https://dediware.xyz/revwarelib.lua"))()
+if not isfile("revware/ground.png") then
+    writefile('revware/ground.png', game:HttpGet('https://dediware.xyz/ground.png'))
+end
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/fathater21211/v.1hgj44321223gen4322111/refs/heads/main/UI"))()
+local mouse_location = user_input_service:GetMouseLocation()
+local current_target
+
 local start_tick = tick()
 
 local Window = Library:Window({
 	Name = "RevWare.CC|Fallen",
-})
-
-local watermark = Library:Watermark({
-	Name = "  External/Plasma Dev",
 })
 
 do
@@ -534,9 +526,6 @@ do
 	local local_tab = Window:Tab({
 		Name = "local",
 	})
-
-	-- keybind fix (p1000)
-	Library:KeybindList()
 
 	-- Most sections
 
@@ -617,22 +606,22 @@ do
 		Min = 0,
 		Max = 350,
 		Default = 100,
-		Increment = 1,
+		Decimal = 1,
 	})
 
-	silent_aim_section:Colorpicker({
+	silent_aim_section:Label({Name = "fov circle color"}):Colorpicker({
 		Name = "fov circle color",
 		Flag = "fov circle color",
 		Default = Color3.fromRGB(231,159,196),
 	})
-
+	
 	silent_aim_section:Toggle({
 		Name = "snapline",
 		Flag = "snapline",
 		Default = false,
 	})
 
-	silent_aim_section:Colorpicker({
+	silent_aim_section:Label({Name = "snapline color"}):Colorpicker({
 		Name = "snapline color",
 		Flag = "snapline color",
 		Default = Color3.fromRGB(231,159,196),
@@ -644,7 +633,7 @@ do
 		Default = false,
 	})
 
-	silent_aim_section:Colorpicker({
+	silent_aim_section:Label({Name = "prediction dot color"}):Colorpicker({
 		Name = "prediction dot color",
 		Flag = "prediction dot color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -663,7 +652,7 @@ do
 		Flag = "no recoil",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no recoil"]:Get()
+			local value = Flags["no recoil"]
 			for _, tbl in getgc(true) do
 				if type(tbl) ~= "table" then
 					continue
@@ -680,14 +669,14 @@ do
 							rawset(tbl, "RecoilStart", function(...)
 								local x, y = recoil_start(...)
 
-								return x * (Library.Flags["recoil percent"]:Get() / 100),
-									y * (Library.Flags["recoil percent"]:Get() / 100)
+								return x * (Flags["recoil percent"] / 100),
+									y * (Flags["recoil percent"] / 100)
 							end)
 							rawset(tbl, "RecoilFinish", function(...)
 								local x, y = recoil_finish(...)
 
-								return x * (Library.Flags["recoil percent"]:Get() / 100),
-									y * (Library.Flags["recoil percent"]:Get() / 100)
+								return x * (Flags["recoil percent"] / 100),
+									y * (Flags["recoil percent"] / 100)
 							end)
 						else
 							if old_recoil_start then
@@ -713,13 +702,13 @@ do
 		Min = 0,
 		Max = 100,
 		Default = 0,
-		Increment = 1,
+		Decimal = 1,
 	})
 
 	local old_spread = {}
 
 	local no_spread_callback = function()
-		local value = Library.Flags["no spread"]:Get()
+		local value = Flags["no spread"]
 
 		for _, tbl in getgc(true) do
 			if type(tbl) ~= "table" then
@@ -728,22 +717,24 @@ do
 
 			local spread_table = rawget(tbl, "Spread")
 			if spread_table and typeof(spread_table) == "table" then
-				for _, spread_stuff in spread_table do
-					for i, v in spread_stuff do
-						if type(v) == "number" then
-							if not old_spread[spread_stuff] then
-								old_spread[spread_stuff] = {}
-							end
+				for _, spread_stuff in pairs(spread_table) do
+					if type(spread_stuff) == "table" then
+						for i, v in pairs(spread_stuff) do
+							if type(v) == "number" then
+								if not old_spread[spread_stuff] then
+									old_spread[spread_stuff] = {}
+								end
 
-							if not old_spread[spread_stuff][i] then
-								old_spread[spread_stuff][i] = v
-							end
+								if not old_spread[spread_stuff][i] then
+									old_spread[spread_stuff][i] = v
+								end
 
-							if value then
-								spread_stuff[i] = old_spread[spread_stuff][i]
-									* (Library.Flags["spread percent"]:Get() / 100)
-							else
-								spread_stuff[i] = old_spread[spread_stuff][i]
+								if value then
+									spread_stuff[i] = old_spread[spread_stuff][i]
+										* (Flags["spread percent"] / 100)
+								else
+									spread_stuff[i] = old_spread[spread_stuff][i]
+								end
 							end
 						end
 					end
@@ -767,14 +758,14 @@ do
 		Min = 0,
 		Max = 100,
 		Default = 0,
-		Increment = 1,
+		Decimal = 1,
 		Callback = no_spread_callback,
 	})
 
 	local old_firerates = {}
 
 	local fast_fire_callback = function()
-		local value = Library.Flags["fast firerate"]:Get()
+		local value = Flags["fast firerate"]
 
 		for _, tbl in getgc(true) do
 			if type(tbl) ~= "table" then
@@ -789,7 +780,7 @@ do
 				end
 
 				if value then
-					tbl.RPM = old_firerates[tbl] * Library.Flags["fire rate"]:Get()
+					tbl.RPM = old_firerates[tbl] * Flags["fire rate"]
 				else
 					tbl.RPM = old_firerates[tbl]
 				end
@@ -812,14 +803,14 @@ do
 		Min = 1,
 		Max = 2,
 		Default = 0,
-		Increment = 0.1,
+		Decimal = 0.1,
 		Callback = fast_fire_callback,
 	})
 
 	local old_ranges = {}
 
 	local melee_range_callback = function()
-		local value = Library.Flags["extend melee range"]:Get()
+		local value = Flags["extend melee range"]
 
 		for _, tbl in getgc(true) do
 			if type(tbl) ~= "table" then
@@ -833,7 +824,7 @@ do
 				end
 
 				if value then
-					tbl.Range = old_ranges[tbl] * Library.Flags["melee range multiplier"]:Get()
+					tbl.Range = old_ranges[tbl] * Flags["melee range multiplier"]
 				else
 					tbl.Range = old_ranges[tbl]
 				end
@@ -856,14 +847,14 @@ do
 		Min = 1,
 		Max = 4,
 		Default = 0,
-		Increment = 0.1,
+		Decimal = 0.1,
 		Callback = melee_range_callback,
 	})
 
 	local old_cooldowns = {}
 
 	local cooldown_callback = function()
-		local value = Library.Flags["tool cooldown"]:Get()
+		local value = Flags["tool cooldown"]
 
 		for _, tbl in getgc(true) do
 			if type(tbl) ~= "table" then
@@ -877,7 +868,7 @@ do
 				end
 
 				if value then
-					tbl.Range = old_cooldowns[tbl] / Library.Flags["cooldown multiplier"]:Get()
+					tbl.Range = old_cooldowns[tbl] / Flags["cooldown multiplier"]
 				else
 					tbl.Range = old_cooldowns[tbl]
 				end
@@ -900,7 +891,7 @@ do
 		Min = 1,
 		Max = 1.4,
 		Default = 0,
-		Increment = 0.1,
+		Decimal = 0.1,
 		Callback = old_cooldowns,
 	})
 
@@ -910,7 +901,7 @@ do
 		Flag = "instant hit",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["instant hit"]:Get()
+			local value = Flags["instant hit"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -940,7 +931,7 @@ do
 		Flag = "no viewmodel bob",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no viewmodel bob"]:Get()
+			local value = Flags["no viewmodel bob"]
 			if value then
 				for _, tbl in getgc(true) do
 					if type(tbl) ~= "table" then
@@ -978,7 +969,7 @@ do
 		Flag = "no gun slowdown",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no slowdown"]:Get()
+			local value = Flags["no slowdown"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -1010,7 +1001,7 @@ do
 		Flag = "no bullet drop",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no bullet drop"]:Get()
+			local value = Flags["no bullet drop"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -1046,7 +1037,7 @@ do
 		Flag = "instant equip",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["instant equip"]:Get()
+			local value = Flags["instant equip"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -1075,7 +1066,7 @@ do
 		Flag = "instant aim",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["instant aim"]:Get()
+			local value = Flags["instant aim"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -1120,7 +1111,7 @@ do
 		Flag = "always automatic",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["always automatic"]:Get()
+			local value = Flags["always automatic"]
 
 			if value then
 				for _, tbl in getgc(true) do
@@ -1176,7 +1167,7 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "highlight color"}):Colorpicker({
 		Name = "highlight color",
 		Flag = "highlight color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1188,7 +1179,7 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "box esp color"}):Colorpicker({
 		Name = "box esp color",
 		Flag = "box esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1207,13 +1198,13 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "visible flag color"}):Colorpicker({
 		Name = "visible flag color",
 		Flag = "visible flag color",
 		Default = Color3.fromRGB(255, 255, 255),
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "non- color"}):Colorpicker({
 		Name = "non- color",
 		Flag = "box esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1225,7 +1216,7 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "name esp color"}):Colorpicker({
 		Name = "name esp color",
 		Flag = "name esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1244,7 +1235,7 @@ do
 		Default = "studs",
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "distance esp color"}):Colorpicker({
 		Name = "distance esp color",
 		Flag = "distance esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1256,7 +1247,7 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "weapon esp color"}):Colorpicker({
 		Name = "weapon esp color",
 		Flag = "weapon esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1276,7 +1267,7 @@ do
 		Min = 0.1,
 		Max = 3,
 		Default = 1.5,
-		Increment = 0.1,
+		Decimal = 0.1,
 	})
 
 	player_esp_section:Dropdown({
@@ -1298,7 +1289,7 @@ do
 		Default = false,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "skeleton esp color"}):Colorpicker({
 		Name = "skeleton esp color",
 		Flag = "skeleton esp color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1312,7 +1303,7 @@ do
 		Min = 0,
 		Max = 2,
 		Default = 1.4,
-		Increment = 0.1,
+		Decimal = 0.1,
 	})
 
 	player_esp_section:Toggle({
@@ -1329,10 +1320,10 @@ do
 		Min = 0,
 		Max = 1,
 		Default = 0.5,
-		Increment = 0.1,
+		Decimal = 0.1,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "chams color"}):Colorpicker({
 		Name = "chams color",
 		Flag = "chams color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1346,10 +1337,10 @@ do
 		Min = 0,
 		Max = 1,
 		Default = 0.5,
-		Increment = 0.1,
+		Decimal = 0.1,
 	})
 
-	player_esp_section:Colorpicker({
+	player_esp_section:Label({Name = "chams outline color"}):Colorpicker({
 		Name = "chams outline color",
 		Flag = "chams outline color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1554,12 +1545,12 @@ do
 		Flag = "ambient",
 		Default = false,
 		Callback = function()
-			if not Library.Flags["ambient color"] then
+			if not Flags["ambient color"] then
 				return
 			end
 
-			local value = Library.Flags["ambient"]:Get()
-			local ambient_color = Library.Flags["ambient color"]:Get()
+			local value = Flags["ambient"]
+			local ambient_color = Flags["ambient color"]
 
 			if value and ambient_color then
 				if not old_ambient_color then
@@ -1571,17 +1562,17 @@ do
 		end,
 	})
 
-	visuals_misc_section:Colorpicker({
+	visuals_misc_section:Label({Name = "ambient color"}):Colorpicker({
 		Name = "ambient color",
 		Flag = "ambient color",
 		Default = Color3.fromRGB(255, 255, 255),
 		Callback = function()
-			if not Library.Flags["ambient color"] then
+			if not Flags["ambient color"] then
 				return
 			end
 
-			local value = Library.Flags["ambient"]:Get()
-			local ambient_color = Library.Flags["ambient color"]:Get()
+			local value = Flags["ambient"]
+			local ambient_color = Flags["ambient color"]
 
 			if value and ambient_color then
 				if not old_ambient_color then
@@ -1604,7 +1595,7 @@ do
 		Default = false,
 	})
 
-	trace_section:Colorpicker({
+	trace_section:Label({Name = "hitmarkers color"}):Colorpicker({
 		Name = "hitmarkers color",
 		Flag = "hitmarkers color",
 		Default = Color3.fromRGB(255, 255, 255),
@@ -1618,7 +1609,7 @@ do
 		Min = 0,
 		Max = 15,
 		Default = 5,
-		Increment = 1,
+		Decimal = 1,
 	})
 
 	trace_section:Toggle({
@@ -1635,10 +1626,10 @@ do
 		Min = 0,
 		Max = 15,
 		Default = 5,
-		Increment = 1,
+		Decimal = 1,
 	})
 
-	trace_section:Colorpicker({
+	trace_section:Label({Name = "melee tracers color"}):Colorpicker({
 		Name = "melee tracers color",
 		Flag = "melee tracers color",
 		Default = Color3.fromRGB(231,159,196),
@@ -1658,10 +1649,10 @@ do
 		Min = 0,
 		Max = 15,
 		Default = 5,
-		Increment = 1,
+		Decimal = 1,
 	})
 
-	trace_section:Colorpicker({
+	trace_section:Label({Name = "bullet tracers color"}):Colorpicker({
 		Name = "bullet tracers color",
 		Flag = "bullet tracers color",
 		Default = Color3.fromRGB(231,159,196),
@@ -1672,7 +1663,7 @@ do
 		Flag = "no grass",
 		Default = false,
 		Callback = function()
-			sethiddenproperty(terrain, "Decoration", not Library.Flags["no grass"]:Get())
+			sethiddenproperty(terrain, "Decoration", not Flags["no grass"])
 		end,
 	})
 
@@ -1690,7 +1681,7 @@ do
 		Min = 70,
 		Max = 120,
 		Default = 70,
-		Increment = 1,
+		Decimal = 1,
 	})
 
 	local zoom_toggle = visuals_misc_section:Toggle({
@@ -1714,7 +1705,7 @@ do
 		Min = 1,
 		Max = 40,
 		Default = 20,
-		Increment = 1,
+		Decimal = 1,
 	})
 
 	local movement_section = local_tab:Section({
@@ -1749,7 +1740,7 @@ do
 		Min = 1,
 		Max = 40,
 		Default = 35,
-		Increment = 1,
+		Decimal = 1,
 	})
 
 	speed_toggle:Keybind({
@@ -1758,6 +1749,95 @@ do
 		Default = Enum.KeyCode.V,
 		Mode = "Toggle",
 	})
+
+	movement_section:Toggle({
+		Name = "always grounded",
+		Flag = "always grounded",
+		Default = false,
+	})
+
+	Library.desync = {
+		DesyncFresh = false,
+        Pitch = 0,
+        Yaw = 0,
+        HumanoidRootPart = nil,
+        OrigCframe = nil,
+        OrigHRPCFrame = nil,
+        DesyncCframe = nil,
+    }
+    Library.desynccircle = {
+		Enabled = false,
+		Circle = nil,
+	}
+	Workspace.StreamingEnabled = false
+	
+	Library.desynccircle.Circle = Instance.new("Part")
+	Library.desynccircle.Circle.Anchored = true
+	Library.desynccircle.Circle.CanCollide = false
+	Library.desynccircle.Circle.Shape = Enum.PartType.Ball
+	Library.desynccircle.Circle.Size = Vector3.new(3, 3, 3)
+	Library.desynccircle.Circle.Position = Vector3.new(0, 0, 0)
+	Library.desynccircle.Circle.Name = "CirclePart"
+	Library.desynccircle.Circle.Material = Enum.Material.ForceField
+	Library.desynccircle.Circle.Color = Color3.fromRGB(219, 70, 70)
+	Library.desynccircle.Circle.Transparency = 0.25
+	Library.desynccircle.Circle.Parent = workspace
+	
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(219, 70, 70)
+	light.Range = 16
+	light.Brightness = 2
+	light.Parent = Library.desynccircle.Circle
+
+	movement_section:Toggle({
+		Name = "Desync",
+		Flag = "Desync Enabled",
+		Default = false,
+	}):Keybind({
+        Name = "",
+        Default = Enum.KeyCode.F,
+		Flag = "Desync KeyBind",
+        Mode = "Toggle",
+		Callback = function()
+			if not local_player.Character or not local_player.Character:FindFirstChild('HumanoidRootPart') then
+				return
+			end
+			Library.desync.DesyncFresh = Flags['Desync KeyBind'].active
+			local camera = workspace.CurrentCamera
+			Library.desync.OrigCframe = camera.CFrame;
+			Library.desync.OrigHRPCFrame = local_player.Character.HumanoidRootPart.CFrame
+			Library.desynccircle.Circle.Position = local_player.Character.HumanoidRootPart.Position
+			
+			local lookVector = camera.CFrame.LookVector;
+
+			Library.desync.Pitch = math.deg(math.asin(lookVector.Y))
+			Library.desync.Yaw = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
+			user_input_service.MouseBehavior = Enum.MouseBehavior.LockCenter
+        end
+    })
+
+    movement_section:Slider{
+        Name = "Speed",
+        Default = 2,
+        Min = 0.1,
+        Max = 5,
+        Decimal = 0.1,
+        Flag = "Desync Speed",
+    }
+
+    movement_section:Toggle{
+        Name = "Max Distance",
+        Flag = "Max Distance Desync Enabled",
+        Default = true,
+    }
+	movement_section:Slider{
+        Name = "Max Distance",
+        Default = 9,
+        Min = 0,
+        Max = 20,
+        Float = 1,
+        Flag = "Max Distance Desync",
+    }
 
 	local local_chams_section = local_tab:Section({
 		Name = "local chams",
@@ -1786,7 +1866,7 @@ do
 		Default = false,
 	})
 
-	local_chams_section:Colorpicker({
+	local_chams_section:Label({Name = "local chams color"}):Colorpicker({
 		Name = "local chams color",
 		Flag = "local chams color",
 		Default = Color3.fromRGB(231,159,196),
@@ -1832,7 +1912,7 @@ do
 		Flag = "no trap damages",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no trap damages"]:Get()
+			local value = Flags["no trap damages"]
 
 			if value then
 				for _, v in workspace:GetDescendants() do
@@ -1851,7 +1931,7 @@ do
 	})
 
 	workspace.DescendantAdded:Connect(function(descendant)
-		local value = Library.Flags["no trap damages"]:Get()
+		local value = Flags["no trap damages"]
 		if descendant:IsA("BasePart") and descendant.Name == "DamagePart" and value then
 			insert_part(stored_damage_parts, descendant, descendant.Parent)
 			descendant.Parent = core_gui
@@ -1865,7 +1945,7 @@ do
 		Flag = "no fire damages",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no fire damages"]:Get()
+			local value = Flags["no fire damages"]
 
 			if value then
 				for _, v in workspace:GetDescendants() do
@@ -1884,7 +1964,7 @@ do
 	})
 
 	workspace.DescendantAdded:Connect(function(descendant)
-		local value = Library.Flags["no fire damages"]:Get()
+		local value = Flags["no fire damages"]
 		if
 			descendant:IsA("BasePart")
 			and descendant.Name == "Collision"
@@ -1903,7 +1983,7 @@ do
 		Flag = "no trap touch parts",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["no trap touch parts"]:Get()
+			local value = Flags["no trap touch parts"]
 
 			if value then
 				for _, v in workspace:GetDescendants() do
@@ -1968,7 +2048,7 @@ exploits_section:Toggle({
 	Flag = "HitSoundsHeadEnabled_Toggle",
 	Default = false,
 	Callback = function()
-		local value = Library.Flags["hitsound_settings.head.enabled"]:Get()
+		local value = Flags["hitsound_settings.head.enabled"]
 
 		if not value then
 			
@@ -1978,8 +2058,8 @@ exploits_section:Toggle({
 	end,
 })
 
-exploits_section:Listbox({ Flag = "HitSoundsHead_Sound", Options = {'Neverlose','Gamesense','Rust','TF2','Among Us','Minecraft','CS:GO','Osu','TF2 Critical','Bat','Call of Duty','Pop','Bruh','Bamboo','Old Fatality','Mario','Steve'}, })
-	exploits_section:Textbox({
+exploits_section:Dropdown({ Flag = "HitSoundsHead_Sound", Options = {'Neverlose','Gamesense','Rust','TF2','Among Us','Minecraft','CS:GO','Osu','TF2 Critical','Bat','Call of Duty','Pop','Bruh','Bamboo','Old Fatality','Mario','Steve'}, })
+exploits_section:Textbox({
 	Name = "Sound",
 	Flag = "HitSoundsHead_Sound",
 	Placeholder = "Type here...",
@@ -2004,7 +2084,7 @@ exploits_section:Toggle({
 	Flag = "Always Sprint",
 	Default = false,
 	Callback = function()
-		local value = Library.Flags["Always Sprint"]:Get()
+		local value = Flags["Always Sprint"]
 
 		if not value then
 			
@@ -2050,7 +2130,7 @@ exploits_section:Toggle({
 
 
 workspace.DescendantAdded:Connect(function(descendant)
-	local value = Library.Flags["no trap touch parts"]:Get()
+	local value = Flags["no trap touch parts"]
 	if descendant:IsA("BasePart") and descendant.Name == "TouchCollision" and value then
 		insert_part(stored_trap_parts, descendant, descendant.Parent)
 		descendant.Parent = core_gui
@@ -2063,54 +2143,51 @@ end)
         Flag = "Underground",
         Default = false,
         Callback = function()
-            local value = Library.Flags["Underground"]:Get()
-    
-            if value then
-             --underground antiaim for fallen leaked 
-    getgenv().underground = -1.9
-    
-    local enabled = false
-    local runserv = game:GetService("RunService")
-    local lplr = game:GetService("Players").LocalPlayer
-    local mouse = lplr:GetMouse()
-    local animation = Instance.new("Animation")
-    animation.AnimationId = "rbxassetid://13435049596"
-    local danceTrack
-    mouse.KeyDown:Connect(function(key)
-        if key == string.lower("v") then
-            pcall(function()
-                if enabled == false then
-                    enabled = true
-                    danceTrack = lplr.Character:FindFirstChildWhichIsA("Humanoid"):LoadAnimation(animation)
-                    danceTrack.Looped = true
-                    danceTrack:Play()
-                elseif enabled then
-                    enabled = false
-                    danceTrack:Stop()
-                    danceTrack:Destroy()
-                end
-            end)
-        end
-    end)
-    local dysenc = {}
-    local temp = 1
-    runserv.Heartbeat:Connect(function()
-        temp = temp + 1
-        if enabled and lplr.Character and lplr.Character.HumanoidRootPart then
-            dysenc[1] = lplr.Character.HumanoidRootPart.CFrame
-            dysenc[2] = lplr.Character.HumanoidRootPart.AssemblyLinearVelocity
-            local SpoofThis = lplr.Character.HumanoidRootPart.CFrame
-            SpoofThis = (SpoofThis + Vector3.new(0, getgenv().underground, 0)) * CFrame.Angles(0, 0, 0)
-            lplr.Character.HumanoidRootPart.CFrame = SpoofThis
-            runserv.RenderStepped:Wait()
-            if lplr.Character and lplr.Character.HumanoidRootPart then
-                lplr.Character.HumanoidRootPart.CFrame = dysenc[1]
-                lplr.Character.HumanoidRootPart.AssemblyLinearVelocity = dysenc[2]
-            end
-        end
-    end)
-    
-    
+            local value = Flags["Underground"]
+			
+			if value then
+				getgenv().underground = -1.9
+				
+				local enabled = false
+				local runserv = game:GetService("RunService")
+				local lplr = game:GetService("Players").LocalPlayer
+				local mouse = lplr:GetMouse()
+				local animation = Instance.new("Animation")
+				animation.AnimationId = "rbxassetid://13435049596"
+				local danceTrack
+				mouse.KeyDown:Connect(function(key)
+					if key == string.lower("v") then
+						pcall(function()
+							if enabled == false then
+								enabled = true
+								danceTrack = lplr.Character:FindFirstChildWhichIsA("Humanoid"):LoadAnimation(animation)
+								danceTrack.Looped = true
+								danceTrack:Play()
+							elseif enabled then
+								enabled = false
+								danceTrack:Stop()
+								danceTrack:Destroy()
+							end
+						end)
+					end
+				end)
+				local dysenc = {}
+				local temp = 1
+				runserv.Heartbeat:Connect(function()
+					temp = temp + 1
+					if enabled and lplr.Character and lplr.Character.HumanoidRootPart then
+						dysenc[1] = lplr.Character.HumanoidRootPart.CFrame
+						dysenc[2] = lplr.Character.HumanoidRootPart.AssemblyLinearVelocity
+						local SpoofThis = lplr.Character.HumanoidRootPart.CFrame
+						SpoofThis = (SpoofThis + Vector3.new(0, getgenv().underground, 0)) * CFrame.Angles(0, 0, 0)
+						lplr.Character.HumanoidRootPart.CFrame = SpoofThis
+						runserv.RenderStepped:Wait()
+						if lplr.Character and lplr.Character.HumanoidRootPart then
+							lplr.Character.HumanoidRootPart.CFrame = dysenc[1]
+							lplr.Character.HumanoidRootPart.AssemblyLinearVelocity = dysenc[2]
+						end
+					end
+				end)
             end
         end,
     })
@@ -2119,7 +2196,7 @@ end)
 
 
 	workspace.DescendantAdded:Connect(function(descendant)
-		local value = Library.Flags["no trap touch parts"]:Get()
+		local value = Flags["no trap touch parts"]
 		if descendant:IsA("BasePart") and descendant.Name == "TouchCollision" and value then
 			insert_part(stored_trap_parts, descendant, descendant.Parent)
 			descendant.Parent = core_gui
@@ -2148,7 +2225,7 @@ end)
 	local cached_ranks = {}
 
 	local get_group_rank
-	get_group_rank = function(player: Player, attempts: number): number
+	get_group_rank = function(player, attempts)
 		attempts = attempts or 1
 
 		if attempts > 5 then
@@ -2178,49 +2255,29 @@ end)
 		end
 	end
 
-	local mod_detector = function(player: Player)
+	local mod_detector = function(player)
 		if player == local_player then
 			return
 		end
 
-		if not Library.Flags["mod detector"]:Get() then
+		if not Flags["mod detector"] then
 			return
 		end
 
 		local group_rank = get_group_rank(player)
-		print(group_rank)
+		-- print(group_rank)
 		if group_rank >= 15 then
-			if Library.Flags["detect options"]:Get() == "notify" then
+			if Flags["detect options"] == "notify" then
 				if player.DisplayName == player.Name then
-					Library:Notify(
-						string.format("[ 🎣 ] mod detected! @%s [%s]", player.Name, ranks[group_rank]),
-						3,
-						Library.Accent
-					)
+					Notifications:Create(string.format("[🏎️📈RevWare ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
 				else
-					Library:Notify(
-						string.format(
-							"[ 🎣 ] mod detected! %s (@%s) [%s]",
-							player.DisplayName,
-							player.Name,
-							ranks[group_rank]
-						),
-						3,
-						Library.Accent
-					)
+					Notifications:Create(string.format("[🏎️📈RevWare ] mod detected! %s (@%s) [%s]", player.DisplayName, player.Name, ranks[group_rank]))
 				end
 			else
 				if player.DisplayName == player.Name then
-					local_player:Kick(string.format("[ 🎣 ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
+					local_player:Kick(string.format("[🏎️📈RevWare ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
 				else
-					local_player:Kick(
-						string.format(
-							"[ 🎣 ] mod detected! %s (@%s) [%s]",
-							player.DisplayName,
-							player.Name,
-							ranks[group_rank]
-						)
-					)
+					local_player:Kick(string.format("[🏎️📈RevWare ] mod detected! %s (@%s) [%s]",player.DisplayName,player.Name,ranks[group_rank]))
 				end
 			end
 		end
@@ -2231,7 +2288,7 @@ end)
 		Flag = "mod detector",
 		Default = false,
 		Callback = function()
-			local value = Library.Flags["mod detector"]
+			local value = Flags["mod detector"]
 
 			if value then
 				for _, player in players:GetPlayers() do
@@ -2281,9 +2338,9 @@ end)
 		Default = Enum.KeyCode.K,
 		Mode = "Toggle",
 		Callback = function()
-			local value = Library.Flags["xray key bind"]:Get()
+			local value = Flags["xray key bind"].active
 
-			if value and Library.Flags["xray"]:Get() then
+			if value and Flags["xray"] then
 				for _, v in bases:GetDescendants() do
 					if not v:IsA("BasePart") then
 						continue
@@ -2293,7 +2350,7 @@ end)
 
 					if current_transparency < 1 and is_valid(v) and not stored_xray_parts[v] then
 						insert_part(stored_xray_parts, v, current_transparency)
-						v.Transparency = Library.Flags["xray transparency"]:Get()
+						v.Transparency = Flags["xray transparency"]
 					end
 				end
 			else
@@ -2314,18 +2371,18 @@ end)
 			return
 		end
 
-		local value = Library.Flags["xray key bind"]:Get()
+		local value = Flags["xray key bind"].active
 
 		local current_transparency = v.Transparency
 		if
 			current_transparency < 1
 			and is_valid(v)
 			and value
-			and Library.Flags["xray"]:Get()
+			and Flags["xray"]
 			and not stored_xray_parts[v]
 		then
 			insert_part(stored_xray_parts, v, current_transparency)
-			v.Transparency = Library.Flags["xray transparency"]:Get()
+			v.Transparency = Flags["xray transparency"]
 		end
 	end)
 
@@ -2337,9 +2394,9 @@ end)
 		Min = 0,
 		Max = 1,
 		Default = 0.5,
-		Increment = 0.1,
+		Decimal = 0.1,
 		Callback = function()
-			local value = Library.Flags["xray transparency"]:Get()
+			local value = Flags["xray transparency"]
 			for part, _ in stored_xray_parts do
 				if part then
 					part.Transparency = value
@@ -2350,181 +2407,63 @@ end)
 		end,
 	})
 
-	local loot_through_door_toggle = misc_section:Toggle({
-		Name = "loot through door",
-		Flag = "loot through door",
-		Default = false,
+	misc_section:Toggle({
+		Name = 'anti fling',
+		Flag = 'anti fling',
+		Default = false
 	})
 
-	local stored_doors = {}
+	-- local loot_through_door_toggle = misc_section:Toggle({
+	-- 	Name = "loot through door",
+	-- 	Flag = "loot through door",
+	-- 	Default = false,
+	-- })
 
-	loot_through_door_toggle:Keybind({
-		Name = "loot through door key bind",
-		Flag = "loot through door key bind",
-		Default = Enum.KeyCode.J,
-		Mode = "Toggle",
-		Callback = function()
-			local value = Library.Flags["loot through door key bind"]:Get()
+	-- local stored_doors = {}
 
-			if value and Library.Flags["loot through door"]:Get() then
-				for _, v in bases:GetDescendants() do
-					if v:IsA("Model") and v.Name:find("Door") and v.Name ~= "Doorway" and not stored_doors[v] then
-						insert_part(stored_doors, v, v.Parent)
-						v.Parent = lighting
-					end
-				end
-			else
-				for part, parent in stored_doors do
-					if part and parent then
-						part.Parent = parent
-					end
-				end
-				table.clear(stored_doors)
-			end
-		end,
-	})
+	-- loot_through_door_toggle:Keybind({
+	-- 	Name = "loot through door key bind",
+	-- 	Flag = "loot through door key bind",
+	-- 	Default = Enum.KeyCode.J,
+	-- 	Mode = "Toggle",
+	-- 	Callback = function()
+	-- 		local value = Flags["loot through door key bind"].active
 
-	bases.DescendantAdded:Connect(function(v)
-		local value = Library.Flags["loot through door key bind"]:Get()
-		if
-			v:IsA("Model")
-			and v.Name:find("Door")
-			and v.Name ~= "Doorway"
-			and value
-			and Library.Flags["loot through door"]:Get()
-			and not stored_doors[v]
-		then
-			insert_part(stored_doors, v, v.Parent)
-			v.Parent = lighting
-		end
-	end)
+	-- 		if value and Flags["loot through door"] then
+	-- 			for _, v in bases:GetDescendants() do
+	-- 				if v:IsA("Model") and v.Name:find("Door") and v.Name ~= "Doorway" and not stored_doors[v] then
+	-- 					insert_part(stored_doors, v, v.Parent)
+	-- 					v.Parent = lighting
+	-- 				end
+	-- 			end
+	-- 		else
+	-- 			for part, parent in stored_doors do
+	-- 				if part and parent then
+	-- 					part.Parent = parent
+	-- 				end
+	-- 			end
+	-- 			table.clear(stored_doors)
+	-- 		end
+	-- 	end,
+	-- })
+
+	-- bases.DescendantAdded:Connect(function(v)
+	-- 	local value = Flags["loot through door key bind"].active
+	-- 	if
+	-- 		v:IsA("Model")
+	-- 		and v.Name:find("Door")
+	-- 		and v.Name ~= "Doorway"
+	-- 		and value
+	-- 		and Flags["loot through door"]
+	-- 		and not stored_doors[v]
+	-- 	then
+	-- 		insert_part(stored_doors, v, v.Parent)
+	-- 		v.Parent = lighting
+	-- 	end
+	-- end)
 end
-local settings_tab = Window:Tab({
-	Name = "settings",
-})
 
-local settings_section = settings_tab:Section({
-	Name = "Settings",
-	Side = "Right",
-})
-
-do
-	settings_section:Keybind({
-		Name = "ui keybind",
-		Flag = "ui keybind",
-		Default = Enum.KeyCode.RightShift,
-		Mode = "Toggle",
-		Hidden = true,
-		Callback = function()
-			local keybind = Library.Flags["ui keybind"].Key
-			Library.Key = keybind
-		end,
-	})
-
-	settings_section:Toggle({
-		Name = "ui watermark",
-		Flag = "ui watermark",
-		Default = true,
-		Callback = function()
-			watermark:SetVisiblity(Library.Flags["ui watermark"]:Get())
-		end,
-	})
-
-	settings_section:Toggle({
-		Name = "ui keybind list",
-		Flag = "ui keybind list",
-		Default = true,
-		Callback = function()
-			Library.KeybindList:SetVisibility(Library.Flags["ui keybind list"]:Get())
-		end,
-	})
-
-	local Main = settings_tab:Section({
-		Name = "Configs",
-		Side = "Left",
-	})
-
-	local ConfigDropdown
-	local refresh_configs = function()
-		for Index, _ in ConfigDropdown.Options do
-			ConfigDropdown:RemoveOption(Index)
-		end
-
-		local List = {}
-
-		for _, File in listfiles(Library.FolderName .. "/Configs") do
-			local FileName = File:gsub("^" .. Library.FolderName, "")
-				:gsub("^/Configs", "")
-				:gsub("^\\Configs", "")
-				:gsub("^\\", "")
-				:gsub("^/", "")
-				:gsub(".json$", "")
-			List[#List + 1] = FileName
-		end
-
-		for _, Value in List do
-			ConfigDropdown:AddOption(Value)
-		end
-	end
-	ConfigDropdown = Main:Listbox({ Flag = "SelectedConfig", Options = {} })
-	Main:Textbox({
-		Name = "Config Name",
-		Flag = "ConfigName",
-		Placeholder = "Type here...",
-		Compact = true,
-		Default = "",
-	})
-	Main:Button({
-		Name = "Create",
-		Callback = function()
-			Library.Flags["ConfigName"]:Set(string.upper(Library.Flags["ConfigName"].Value))
-			if
-				Library.Flags["ConfigName"].Value == ""
-				or Library.Flags["ConfigName"]:Get():find("/")
-				or Library.Flags["ConfigName"]:Get():find("\\")
-			then
-				Library:Notify("invalid config name", 3, Color3.fromRGB(231,159,196))
-				return
-			end
-
-			Library:SaveConfig(Library.Flags["ConfigName"].Value)
-			Library:Notify("Created config " .. Library.Flags["ConfigName"].Value, 3, Color3.fromRGB(231,159,196))
-			refresh_configs()
-		end,
-	}):Sub({
-		Name = "Delete",
-		Callback = function()
-			Library.Flags["ConfigName"]:Set(string.upper(Library.Flags["ConfigName"].Value))
-			Library:DeleteConfig(Library.Flags["SelectedConfig"].Value)
-			Library:Notify(
-				"deleted config " .. Library.Flags["SelectedConfig"].Value .. ", Refreshing list...",
-				3,
-				Color3.fromRGB (231,159,196)
-			)
-			task.wait(0.2)
-			refresh_configs()
-		end,
-	})
-	Main:Button({
-		Name = "Load",
-		Callback = function()
-			Library.Flags["ConfigName"]:Set(string.upper(Library.Flags["ConfigName"].Value))
-			Library:LoadConfig(
-				readfile(Library.FolderName .. "/Configs/" .. Library.Flags["SelectedConfig"].Value .. ".json")
-			)
-			Library:Notify("loaded config " .. Library.Flags["ConfigName"].Value, 3, Color3.fromRGB(231,159,196))
-		end,
-	}):Sub({
-		Name = "Save",
-		Callback = function()
-			Library.Flags["ConfigName"]:Set(string.upper(Library.Flags["ConfigName"].Value))
-			Library:SaveConfig(Library.Flags["SelectedConfig"].Value)
-			Library:Notify("saved config " .. Library.Flags["ConfigName"].Value, 3, Color3.fromRGB(231,159,196))
-		end,
-	})
-
-	refresh_configs()
-end
+Library:Configs(Window)
 
 local is_down = function(humanoid)
 	return humanoid:GetAttribute("Downed")
@@ -2559,7 +2498,7 @@ local get_target = function(fov_size)
 
 	local silly = players:GetPlayers()
 
-	if Library.Flags["target npcs"]:Get() then
+	if Flags["target npcs"] then
 		for _, folder in military:GetChildren() do
 			for _, model in folder:GetChildren() do
 				if model:IsA("Model") then
@@ -2569,7 +2508,7 @@ local get_target = function(fov_size)
 		end
 	end
 
-	local body_parts = Library.Flags["body parts"]:Get()
+	local body_parts = Flags["body parts"]
 	if body_parts == "random" then
 		local hawked_tuah = { "Head", "UpperTorso" }
 		body_parts = hawked_tuah[math.random(1, #hawked_tuah)]
@@ -2588,15 +2527,15 @@ local get_target = function(fov_size)
 			continue
 		end
 
-		if Library.Flags["team check"]:Get() and is_team(player) then
+		if Flags["team check"] and is_team(player) then
 			continue
 		end
 
-		if Library.Flags["down check"]:Get() and is_down(humanoid) then
+		if Flags["down check"] and is_down(humanoid) then
 			continue
 		end
 
-		if Library.Flags["dead check"]:Get() and is_dead(humanoid) then
+		if Flags["dead check"] and is_dead(humanoid) then
 			continue
 		end
 
@@ -2642,21 +2581,25 @@ local get_target = function(fov_size)
 end
 
 local circle = Drawing.new("Circle")
-circle.Visible = Library.Flags["fov circle"]:Get()
-circle.Color = Library.Flags["fov circle color"]:Get()
+circle.Visible = Flags["fov circle"]
+circle.Color = Flags["fov circle color"]['Color']
+circle.Transparency = Flags["fov circle color"]['Transparency']
 circle.Position = mouse_location
-circle.Radius = Library.Flags["fov circle size"]:Get()
+circle.Radius = Flags["fov circle size"]
 circle.Thickness = 1
+
 local dot = Drawing.new("Circle")
 dot.Visible = false
 dot.Filled = true
 dot.Color = Color3.new(1, 1, 1)
 dot.Position = mouse_location
 dot.Radius = 3
+
 local snapline = Drawing.new("Line")
 snapline.Thickness = 1
-snapline.Color = Library.Flags["snapline color"]:Get()
-snapline.Visible = Library.Flags["snapline"]:Get()
+snapline.Color = Flags["snapline color"]['Color']
+snapline.Transparency = Flags["snapline color"]['Transparency']
+snapline.Visible = Flags["snapline"]
 snapline.From = mouse_location
 
 local skibidi = function(draw, property, pos)
@@ -2689,7 +2632,7 @@ local draw_line_2 = function(from, to, color)
 	end
 end
 
-local fishy = {
+local revware = {
 	target = {
 		entry = nil,
 		part = nil,
@@ -2724,7 +2667,7 @@ raycast_params.FilterType = Enum.RaycastFilterType.Exclude
 raycast_params.IgnoreWater = true
 
 do -- functions
-	function fishy.functions:create(class, prop)
+	function revware.functions:create(class, prop)
 		local inst = typeof(class) == "string" and Instance.new(class) or class
 		for property, val in prop do
 			inst[property] = val
@@ -2732,13 +2675,12 @@ do -- functions
 		return inst
 	end
 
-	function fishy.functions:is_visible(Destination)
+	function revware.functions:is_visible(Destination)
 		local part = Destination and Destination.PrimaryPart
 		if not part then
 			return false
 		end
-		local RaycastResult =
-			workspace:Raycast(camera.CFrame.p, (part.Position - camera.CFrame.p).Unit * 10000, raycast_params)
+		local RaycastResult = workspace:Raycast(camera.CFrame.p, (part.Position - camera.CFrame.p).Unit * 10000, raycast_params)
 		return RaycastResult and RaycastResult.Instance:IsDescendantOf(Destination)
 	end
 
@@ -2753,7 +2695,7 @@ do -- functions
 		{ 0.5, 0.5, 0.5 },
 	}
 
-	function fishy.functions:custom_bounds(model)
+	function revware.functions:custom_bounds(model)
 		local min_bound, max_bound =
 			Vector3.new(math.huge, math.huge, math.huge), Vector3.new(-math.huge, -math.huge, -math.huge)
 		local min_width = 2.5
@@ -2790,7 +2732,7 @@ do -- functions
 		return CFrame.new(center), size, center
 	end
 end
-function fishy.functions:get_tool_name(character)
+function revware.functions:get_tool_name(character)
 	for _, v in character:GetChildren() do
 		if not v:IsA("Model") then
 			continue
@@ -2820,12 +2762,12 @@ function fishy.functions:get_tool_name(character)
 end
 
 do -- fonts
-	function fishy.fonts.cache:Register_Font(Name, Weight, Style, Asset)
-		if not isfolder("fishy") then
-			makefolder("fishy")
+	function revware.fonts.cache:Register_Font(Name, Weight, Style, Asset)
+		if not isfolder("revware") then
+			makefolder("revware")
 		end
-		local asset = "fishy/" .. Asset.Id
-		local font = "fishy/" .. Name .. ".font"
+		local asset = "revware/" .. Asset.Id
+		local font = "revware/" .. Name .. ".font"
 		if not isfile(asset) then
 			writefile(asset, Asset.Font)
 		end
@@ -2839,9 +2781,9 @@ do -- fonts
 		return getcustomasset(font)
 	end
 
-	fishy.fonts.options = {
+	revware.fonts.options = {
 		Graph_35 = Font.new(
-			fishy.fonts.cache:Register_Font(
+			revware.fonts.cache:Register_Font(
 				"Graph_35",
 				400,
 				"Regular",
@@ -2854,7 +2796,7 @@ do -- fonts
 			)
 		),
 		JuraLight = Font.new(
-			fishy.fonts.cache:Register_Font(
+			revware.fonts.cache:Register_Font(
 				"JuraLight",
 				400,
 				"Regular",
@@ -2867,7 +2809,7 @@ do -- fonts
 			)
 		),
 		Templeos = Font.new(
-			fishy.fonts.cache:Register_Font(
+			revware.fonts.cache:Register_Font(
 				"Templeos",
 				400,
 				"normal",
@@ -2880,7 +2822,7 @@ do -- fonts
 			)
 		),
 		ProggyTiny = Font.new(
-			fishy.fonts.cache:Register_Font(
+			revware.fonts.cache:Register_Font(
 				"ProggyTiny",
 				400,
 				"Regular",
@@ -2918,54 +2860,54 @@ local draw_line = function(frame, from, to)
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
 	frame.Position = UDim2.fromOffset(midpoint.X, midpoint.Y)
 	frame.Rotation = theta
-	frame.Size = UDim2.new(0, length, 0, Library.Flags["skeleton esp thickness"]:Get())
+	frame.Size = UDim2.new(0, length, 0, Flags["skeleton esp thickness"])
 end
 
 local ESP = function(model)
 	local esp_connection
-	local esp_holder = fishy.functions:create("ScreenGui", { Parent = gethui(), Name = "esp_holder" })
+	local esp_holder = revware.functions:create("ScreenGui", { Parent = gethui(), Name = "esp_holder" })
 
 	local drawings = {
-		name = fishy.functions:create(
+		name = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = fishy.fonts.options.ProggyTiny,
+				FontFace = revware.fonts.options.ProggyTiny,
 				TextSize = 9,
 				Text = model.Name,
 			}
 		),
-		distance = fishy.functions:create(
+		distance = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = fishy.fonts.options.ProggyTiny,
+				FontFace = revware.fonts.options.ProggyTiny,
 				TextSize = 9,
 			}
 		),
-		weapon = fishy.functions:create(
+		weapon = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = fishy.fonts.options.ProggyTiny,
+				FontFace = revware.fonts.options.ProggyTiny,
 				TextSize = 9,
 			}
 		),
-		HealthText = fishy.functions:create(
+		HealthText = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				TextXAlignment = Enum.TextXAlignment.Center,
-				FontFace = fishy.fonts.options.ProggyTiny,
+				FontFace = revware.fonts.options.ProggyTiny,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -2973,13 +2915,13 @@ local ESP = function(model)
 				TextStrokeColor3 = Color3.new(0, 0, 0),
 			}
 		),
-		Flag1 = fishy.functions:create(
+		Flag1 = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				Text = "",
 				TextColor3 = Color3.new(0, 0.85, 0),
-				FontFace = fishy.fonts.options.ProggyTiny,
+				FontFace = revware.fonts.options.ProggyTiny,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -2988,12 +2930,12 @@ local ESP = function(model)
 				TextXAlignment = Enum.TextXAlignment.Right,
 			}
 		),
-		Flag2 = fishy.functions:create(
+		Flag2 = revware.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				Text = "",
-				FontFace = fishy.fonts.options.JuraLight,
+				FontFace = revware.fonts.options.JuraLight,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -3003,7 +2945,7 @@ local ESP = function(model)
 			}
 		),
 
-		BehindHealthbar = fishy.functions:create(
+		BehindHealthbar = revware.functions:create(
 			"Frame",
 			{
 				Parent = esp_holder,
@@ -3014,7 +2956,7 @@ local ESP = function(model)
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
 			}
 		),
-		Healthbar = fishy.functions:create(
+		Healthbar = revware.functions:create(
 			"Frame",
 			{
 				Parent = esp_holder,
@@ -3023,17 +2965,17 @@ local ESP = function(model)
 				BorderSizePixel = 0,
 			}
 		),
-		HealthbarGradient = fishy.functions:create("UIGradient", { Enabled = true, Rotation = -90 }),
+		HealthbarGradient = revware.functions:create("UIGradient", { Enabled = true, Rotation = -90 }),
 
-		Box = fishy.functions:create(
+		Box = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, BackgroundTransparency = 1, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = -999 }
 		),
-		Box2 = fishy.functions:create(
+		Box2 = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, BackgroundTransparency = 1, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 999 }
 		),
-		Outline = fishy.functions:create(
+		Outline = revware.functions:create(
 			"UIStroke",
 			{
 				Color = Color3.fromRGB(0, 0, 0),
@@ -3043,127 +2985,127 @@ local ESP = function(model)
 				Enabled = true,
 			}
 		),
-		Outline2 = fishy.functions:create(
+		Outline2 = revware.functions:create(
 			"UIStroke",
 			{ Thickness = 1, Enabled = true, LineJoinMode = Enum.LineJoinMode.Miter }
 		),
 
-		LeftTopFix = fishy.functions:create(
+		LeftTopFix = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		RightTopFix = fishy.functions:create(
+		RightTopFix = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		BottomSideFix = fishy.functions:create(
+		BottomSideFix = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		BottomRightSideFix = fishy.functions:create(
+		BottomRightSideFix = revware.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		LeftTop = fishy.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
-		LeftSide = fishy.functions:create("Frame", { Parent = esp_holder }),
-		RightTop = fishy.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
-		RightSide = fishy.functions:create("Frame", { Parent = esp_holder }),
-		BottomSide = fishy.functions:create("Frame", { Parent = esp_holder }),
-		BottomDown = fishy.functions:create("Frame", { Parent = esp_holder }),
-		BottomRightSide = fishy.functions:create("Frame", { Parent = esp_holder }),
-		BottomRightDown = fishy.functions:create("Frame", { Parent = esp_holder }),
-		skeleton = fishy.functions:create("Frame", {
+		LeftTop = revware.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
+		LeftSide = revware.functions:create("Frame", { Parent = esp_holder }),
+		RightTop = revware.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
+		RightSide = revware.functions:create("Frame", { Parent = esp_holder }),
+		BottomSide = revware.functions:create("Frame", { Parent = esp_holder }),
+		BottomDown = revware.functions:create("Frame", { Parent = esp_holder }),
+		BottomRightSide = revware.functions:create("Frame", { Parent = esp_holder }),
+		BottomRightDown = revware.functions:create("Frame", { Parent = esp_holder }),
+		skeleton = revware.functions:create("Frame", {
 			Parent = esp_holder,
 			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 		}),
 	}
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "head",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "torso1",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "torso2",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm1",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm2",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm3",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm1",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm2",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm3",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg1",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg2",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg3",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg1",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg2",
 		BorderSizePixel = 0,
 	})
 
-	fishy.functions:create("Frame", {
+	revware.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg3",
 		BorderSizePixel = 0,
@@ -3183,6 +3125,7 @@ local ESP = function(model)
 		local function hide_esp()
 			for _, name in
 				{
+					"skeleton",
 					"name",
 					"distance",
 					"weapon",
@@ -3228,13 +3171,26 @@ local ESP = function(model)
 		esp_connection = run_service.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
 			local char_model = model and model.Character
 			if char_model then
+				for _, player in pairs(players:GetPlayers()) do
+					if player ~= local_player and player.Character then
+						for _, v in pairs(player.Character:GetDescendants()) do
+							if v:IsA("BasePart") then
+								if Flags['anti fling'] then
+									v.CanCollide = false
+								else 
+									v.CanCollide = true
+								end
+							end
+						end
+					end
+				end
 				local root = char_model and char_model:FindFirstChild("HumanoidRootPart")
 				local humanoid = char_model and char_model:WaitForChild("Humanoid")
 				if humanoid.Health > 0 then
-					local _, size, position = fishy.functions:custom_bounds(char_model)
+					local _, size, position = revware.functions:custom_bounds(char_model)
 					local max_distance
 
-					local measurement_type = Library.Flags["distance measurement"]:Get()
+					local measurement_type = Flags["distance measurement"]
 
 					if position and typeof(position) == "Vector3" then
 						if measurement_type == "studs" then
@@ -3245,14 +3201,14 @@ local ESP = function(model)
 					end
 
 					if
-						Library.Flags["esp enabled"]:Get()
+						Flags["esp enabled"]
 						and max_distance
 						and typeof(max_distance) == "number"
 						and char_model
 						and root
 						and humanoid
 					then
-						local team_check = Library.Flags["esp team check"]:Get()
+						local team_check = Flags["esp team check"]
 
 						if team_check and is_team(model) then
 							return hide_esp()
@@ -3268,30 +3224,30 @@ local ESP = function(model)
 						local scale =
 							Vector2.new((viewport_size.Y / height) * size.X, (viewport_size.Y / height) * size.Y)
 
-						local box_esp = Library.Flags["box esp"]:Get()
-						local box_esp_color = Library.Flags["box esp color"]:Get()
-						local box_type = Library.Flags["box type"]:Get()
+						local box_esp = Flags["box esp"]
+						local box_esp_color = Flags["box esp color"]['Color']
+						local box_type = Flags["box type"]
 
-						local name_esp = Library.Flags["name esp"]:Get()
-						local name_esp_color = Library.Flags["name esp color"]:Get()
+						local name_esp = Flags["name esp"]
+						local name_esp_color = Flags["name esp color"]['Color']
 
-						local distance_esp = Library.Flags["distance esp"]:Get()
-						local distance_esp_color = Library.Flags["distance esp color"]:Get()
+						local distance_esp = Flags["distance esp"]
+						local distance_esp_color = Flags["distance esp color"]['Color']
 
-						local weapon_esp = Library.Flags["weapon esp"]:Get()
-						local weapon_esp_color = Library.Flags["weapon esp color"]:Get()
+						local weapon_esp = Flags["weapon esp"]
+						local weapon_esp_color = Flags["weapon esp color"]['Color']
 
-						local health_bar_esp = Library.Flags["health bar"]:Get()
-						local health_text_esp = Library.Flags["health text"]:Get()
-						local health_bar_thickness = Library.Flags["health bar thickness"]:Get()
-						local health_bar_position = Library.Flags["health bar position"]:Get()
-						local visible_flag_esp = Library.Flags["visible flag esp"]:Get()
+						local health_bar_esp = Flags["health bar"]
+						local health_text_esp = Flags["health text"]
+						local health_bar_thickness = Flags["health bar thickness"]
+						local health_bar_position = Flags["health bar position"]
+						local visible_flag_esp = Flags["visible flag esp"]
 
-						local highlight_esp = Library.Flags["highlight enabled"]:Get()
-						local highlight_esp_color = Library.Flags["highlight color"]:Get()
+						local highlight_esp = Flags["highlight enabled"]
+						local highlight_esp_color = Flags["highlight color"]['Color']
 
-						local skeleton_esp = Library.Flags["skeleton esp"]:Get()
-						local skeleton_esp_color = Library.Flags["skeleton esp color"]:Get()
+						local skeleton_esp = Flags["skeleton esp"]
+						local skeleton_esp_color = Flags["skeleton esp color"]['Color']
 
 						if box_esp and box_type == "full" then
 							drawings.Box.Size = UDim2.new(0, scale.X - 1, 0, scale.Y - 1)
@@ -3492,7 +3448,7 @@ local ESP = function(model)
 									or weapon_esp_color,
 								0.04
 							)
-							drawings.weapon.Text = fishy.functions:get_tool_name(char_model)
+							drawings.weapon.Text = revware.functions:get_tool_name(char_model)
 						else
 							drawings.weapon.Visible = false
 						end
@@ -3632,7 +3588,7 @@ local ESP = function(model)
 							drawings.Flag1.Visible = true
 							drawings.Flag2.Visible = true
 
-							if fishy.functions:is_visible(char_model) then
+							if revware.functions:is_visible(char_model) then
 								drawings.Flag1.Visible = true
 								drawings.Flag1.Text = "Vis"
 							else
@@ -3786,14 +3742,14 @@ local scan_gc = function()
 		local func_name = info.name
 
 		if func_name == "PlayAnimation" then
-			print(func_name)
+			-- print(func_name)
 			local old_play_animation
 			old_play_animation = hookfunction(
 				func,
 				LPH_NO_UPVALUES(function(animation_name, ...)
 					local output = { old_play_animation(animation_name, ...) }
 
-					if (animation_name == "Bolt") and Library.Flags["instant bolt"]:Get() then
+					if (animation_name == "Bolt") and Flags["instant bolt"] then
 						return {
 							Length = 0.015,
 						}
@@ -3805,18 +3761,18 @@ local scan_gc = function()
 			continue
 		end
 		if func_name == "QuickStackItem" then
-			print(func_name)
+			-- print(func_name)
 			table.insert(quick_stack_funcs, func)
 			continue
 		end
 
 		if func_name == "CameraShake" then
-			print(func_name)
+			-- print(func_name)
 			local old_camera_shake_func
 			old_camera_shake_func = hookfunction(
 				func,
 				LPH_NO_UPVALUES(function(...)
-					if Library.Flags["no camera shake"]:Get() then
+					if Flags["no camera shake"] then
 						return
 					end
 
@@ -3825,7 +3781,7 @@ local scan_gc = function()
 			)
 		end
 		if func_name == "LocalHitFunction" then
-			print(func_name)
+			-- print(func_name)
 			local old_local_hit_function
 			old_local_hit_function = hookfunction(
 				func,
@@ -3841,18 +3797,18 @@ local scan_gc = function()
 								local head = model:FindFirstChild("Head")
 
 								if head then
-									if Library.Flags["always headshot"]:Get() then
+									if Flags["always headshot"] then
 										hit_data[1] = hit_data[1].Parent:FindFirstChild("Head")
 										hit_data[2] = hit_data[1]:GetClosestPointOnSurface(camera.CFrame.Position)
 									end
 
-									if Library.Flags["bullet tracers"]:Get() and not hit_data[8] then
+									if Flags["bullet tracers"] and not hit_data[8] then
 										local bs = draw_line_2(
 											camera.CFrame * CFrame.new(0, 0, -5),
 											CFrame.new(hit_data[2]),
-											Library.Flags["bullet tracers color"]:Get()
+											Flags["bullet tracers color"]['Color']
 										)
-										task.delay(Library.Flags["bullet tracers lifetime"]:Get(), bs)
+										task.delay(Flags["bullet tracers lifetime"], bs)
 									end
 								end
 							end
@@ -3866,13 +3822,7 @@ local scan_gc = function()
 	end
 end
 
-settings_section:Button({
-	Name = "rescan game",
-	Flag = "rescan game",
-	Callback = scan_gc,
-})
-
-local check_child = function(child: Instance)
+local check_child = function(child)
 	if not child:IsA("LocalScript") then
 		return
 	end
@@ -3893,7 +3843,7 @@ local check_child = function(child: Instance)
 				return connection:Disconnect()
 			end
 
-			if Library.Flags["sprint while attacking"]:Get() then
+			if Flags["sprint while attacking"] then
 				child:SetAttribute("CanUse", true)
 			end
 		end)
@@ -3918,7 +3868,7 @@ end)
 
 local old_toggle_footstep = sound_table.ToggleFootstep
 sound_table.ToggleFootstep = function(_, character, sound, playback_speed)
-	if Library.Flags["silent walk"]:Get() and sound then
+	if Flags["silent walk"] and sound then
 		return sound_table:StopSound(sound)
 	end
 	return old_toggle_footstep(_, character, sound, playback_speed)
@@ -3926,7 +3876,7 @@ end
 
 local old_play_sound = sound_table.PlaySound
 sound_table.PlaySound = function(_, sound, is_duplicate, playback_speed)
-	if sound and sound.Name == "WalkWater" and Library.Flags["silent walk"]:Get() then
+	if sound and sound.Name == "WalkWater" and Flags["silent walk"] then
 		return sound_table:StopSound(sound)
 	end
 
@@ -4017,7 +3967,7 @@ local add_instance = function(object, data)
 	text.TextStrokeColor3 = Color3.new(0, 0, 0)
 	text.TextStrokeTransparency = 0.8
 	--Font.fromId(12187371840)
-	text.FontFace = fishy.fonts.options.ProggyTiny
+	text.FontFace = revware.fonts.options.ProggyTiny
 	text.Parent = billboard
 
 	local draw = setmetatable({
@@ -4098,8 +4048,8 @@ local add_cache = function(esp_type, obj)
 end
 
 local node_esp = function(obj)
-	local value = Library.Flags["nodes esp"]:Get()
-	local color = Library.Flags["nodes esp color"]:Get()
+	local value = Flags["nodes esp"]
+	local color = Flags["nodes esp color"]['Color']
 
 	if value then
 		draw_instance(types.nodes, obj, {
@@ -4122,8 +4072,8 @@ local read_json = function(input) -- i dont trust fallen survival
 end
 
 local drops_esp = function(obj)
-	local value = Library.Flags["drops esp"]:Get()
-	local color = Library.Flags["drops esp color"]:Get()
+	local value = Flags["drops esp"]
+	local color = Flags["drops esp color"]['Color']
 
 	local item = obj:FindFirstChild("Item")
 
@@ -4152,8 +4102,8 @@ local drops_esp = function(obj)
 end
 
 local plant_esp = function(obj)
-	local value = Library.Flags["plants esp"]:Get()
-	local color = Library.Flags["plants esp color"]:Get()
+	local value = Flags["plants esp"]
+	local color = Flags["plants esp color"]['Color']
 
 	if value then
 		draw_instance(types.plants, obj, {
@@ -4170,8 +4120,8 @@ local military_esp = function(obj)
 		return
 	end
 
-	local value = Library.Flags["soldiers esp"]:Get()
-	local color = Library.Flags["soldiers esp color"]:Get()
+	local value = Flags["soldiers esp"]
+	local color = Flags["soldiers esp color"]['Color']
 
 	if value then
 		local drawing = draw_instance(types.soldiers, obj, {
@@ -4190,8 +4140,8 @@ local military_esp = function(obj)
 end
 
 local body_bag_esp = function(obj)
-	local value = Library.Flags["body bag esp"]:Get()
-	local color = Library.Flags["body bag esp color"]:Get()
+	local value = Flags["body bag esp"]
+	local color = Flags["body bag esp color"]['Color']
 
 	if value then
 		draw_instance(types.body_bags, obj, {
@@ -4212,8 +4162,8 @@ local get_bench_health = function(obj)
 end
 
 local crate_esp = function(obj)
-	local value = Library.Flags["crates esp"]:Get()
-	local color = Library.Flags["crates esp color"]:Get()
+	local value = Flags["crates esp"]
+	local color = Flags["crates esp color"]['Color']
 
 	if value then
 		local current_health, max_health, desired_health = get_bench_health(obj)
@@ -4247,14 +4197,14 @@ local crate_esp = function(obj)
 end
 
 local timed_crate_esp = function(obj)
-	local timer_label: TextLabel = obj:FindFirstChild("TextLabel", true)
+	local timer_label = obj:FindFirstChild("TextLabel", true)
 
 	if not timer_label then
 		return
 	end
 
-	local value = Library.Flags["timed crate esp"]:Get()
-	local color = Library.Flags["timed crate esp color"]:Get()
+	local value = Flags["timed crate esp"]
+	local color = Flags["timed crate esp color"]['Color']
 
 	if value then
 		local drawing = draw_instance(types.timed_crate, obj, {
@@ -4270,9 +4220,9 @@ local timed_crate_esp = function(obj)
 	end
 end
 
-local btr_esp = function(obj: Model)
-	local value = Library.Flags["btr esp"]:Get()
-	local color = Library.Flags["btr esp color"]:Get()
+local btr_esp = function(obj)
+	local value = Flags["btr esp"]
+	local color = Flags["btr esp color"]['Color']
 
 	local root_part = obj:FindFirstChild("HumanoidRootPart")
 
@@ -4317,8 +4267,8 @@ local object_handler = function(obj)
 end
 
 local animal_esp = function(obj)
-	local value = Library.Flags["animals esp"]:Get()
-	local color = Library.Flags["animals esp color"]:Get()
+	local value = Flags["animals esp"]
+	local color = Flags["animals esp color"]['Color']
 
 	if value then
 		local drawing = draw_instance(types.animals, obj, {
@@ -4377,10 +4327,8 @@ local cache_functions = {
 local update_cache = function() -- this handles the turning off / on
 	for type_name, type_func in cache_functions do
 		local flag_name = string.format("%s esp", type_name)
-		local flag_value = Library.Flags[flag_name]
-		assert(flag_value, string.format("no flag called %s", flag_name))
-
-		handle_cache(flag_value:Get(), type_func, type_name)
+		local flag_value = Flags[flag_name]
+		handle_cache(flag_value, type_func, type_name)
 	end
 end
 
@@ -4400,7 +4348,7 @@ end
 
 local update_color = function()
 	for _, type_name in types do
-		handle_color(Library.Flags[string.format("%s esp color", type_name)]:Get(), type_name)
+		handle_color(Flags[string.format("%s esp color", type_name)], type_name)
 	end
 end
 
@@ -4485,12 +4433,12 @@ chams = function(folder)
 			old_materials[child] = child.Material
 			old_colors[child] = child.Color
 
-			if Library.Flags["local chams color enabled"]:Get() then
-				child.Color = Library.Flags["local chams color"]:Get()
+			if Flags["local chams color enabled"] then
+				child.Color = Flags["local chams color"]['Color']
 			end
 
-			if Library.Flags["local chams material enabled"]:Get() then
-				child.Material = Enum.Material[Library.Flags["local chams material"]:Get()]
+			if Flags["local chams material enabled"] then
+				child.Material = Enum.Material[Flags["local chams material"]]
 			end
 		end
 
@@ -4533,7 +4481,7 @@ raycast_table.Raycast = function(...)
 	local traceback = debug.traceback()
 
 	if traceback:find("MouseRaycast") and current_target then
-		print("found heh..")
+		-- print("found heh..")
 		return current_target, current_target.Position, Vector3.new(0, 0, 1), current_target.Material
 	end
 
@@ -4548,14 +4496,16 @@ vfx_table.CreateProjectile = LPH_NO_UPVALUES(function(self, data, ...)
 		current_target
 		and data
 		and type(data) == "table"
-		and Library.Flags["silent aim"]:Get()
+		and Flags["silent aim"]
 		and data.HitFunction
 		and traceback:find("ViewmodelController")
 	then
-		local silly = CFrame.lookAt(data.Position, current_target.Position).LookVector
-
-		data.DirectionFirst = silly
-		data.Direction = silly
+		local direction = (current_target.Position - data.Position).Unit;
+		if Flags['Desync Enabled'] and Flags["Desync KeyBind"].active and Library.desync.DesyncCframe and Library.desync.DesyncCframe.Position then
+			direction = (current_target.Position - Library.desync.DesyncCframe.Position).Unit
+		end
+		data.DirectionFirst = direction
+		data.Direction = direction
 	end
 
 	return old_create_projectile(self, data, ...)
@@ -4590,8 +4540,8 @@ raycast_table.Raycast = function(
 		),
 	}
 
-	local hit_instance: Instance = output[1]
-	local hit_pos: Vector3 = output[2]
+	local hit_instance = output[1]
+	local hit_pos = output[2]
 
 	if not hit_instance or typeof(hit_instance) ~= "Instance" then
 		return unpack(output)
@@ -4613,7 +4563,7 @@ raycast_table.Raycast = function(
 		folder
 		and (folder.Name == "Trees" or folder.Name == "Nodes")
 		and folder:IsA("Folder")
-		and Library.Flags["always perfect farm"]:Get()
+		and Flags["always perfect farm"]
 	then
 		local perfect = model:FindFirstChild("NodeSpark") or model:FindFirstChild("TreeX") or "ham / yuiz_"
 		if perfect and typeof(perfect) == "Instance" and perfect:IsA("Model") and perfect.PrimaryPart then
@@ -4621,16 +4571,16 @@ raycast_table.Raycast = function(
 		end
 	end
 
-	local head: BasePart = model:FindFirstChild("Head")
+	local head = model:FindFirstChild("Head")
 
 	if head and is_viewmodel_controller then
-		if Library.Flags["melee tracers"]:Get() then
+		if Flags["melee tracers"] then
 			local bs = draw_line_2(
 				camera.CFrame * CFrame.new(0, 0, -5),
 				CFrame.new(hit_pos),
-				Library.Flags["melee tracers color"]:Get()
+				Flags["melee tracers color"]['Color']
 			)
-			task.delay(Library.Flags["melee tracers lifetime"]:Get(), bs)
+			task.delay(Flags["melee tracers lifetime"], bs)
 		end
 	end
 
@@ -4639,30 +4589,58 @@ end
 local old_get_setting = settings_table.GetSetting
 settings_table.GetSetting = function(category, setting, ...)
 	if setting == "Field Of View" then
-		local zoom_toggle = Library.Flags["zoom"]:Get()
-		local zoom_keybind = Library.Flags["zoom key bind"]:Get()
+		local zoom_toggle = Flags["zoom"]
+		local zoom_keybind = Flags["zoom key bind"].active
 
-		if Library.Flags["fov changer"]:Get() and not (zoom_toggle and zoom_keybind) then
-			return Library.Flags["camera fov"]:Get()
+		if Flags["fov changer"] and not (zoom_toggle and zoom_keybind) then
+			return Flags["camera fov"]
 		elseif zoom_toggle and zoom_keybind then
-			return Library.Flags["zoom fov"]:Get()
+			return Flags["zoom fov"]
 		end
 	end
 
 	return old_get_setting(category, setting, ...)
 end
+local platform = Instance.new("Part")
+platform.Size = Vector3.new(2, 0.1, 2)
+platform.Anchored = true
+platform.BrickColor = BrickColor.new("Black")
+platform.CanCollide = true
+platform.Name = "Platform"
+platform.Parent = workspace
+platform.Transparency = 1
+
+local distanceText = Instance.new("TextLabel")
+distanceText.Text = "Distance: 69"
+distanceText.Size = UDim2.new(0, 250, 0, 60)
+distanceText.Position = UDim2.new(0.5, -125, 0.25, -30)
+distanceText.TextSize = 30
+distanceText.TextColor3 = Color3.fromRGB(255, 255, 255)
+distanceText.TextStrokeTransparency = 0.5
+distanceText.BackgroundTransparency = 1
+distanceText.Visible = false
+distanceText.FontFace = revware.fonts.options.ProggyTiny
+distanceText.Parent = core_gui
+
+local textGradient = Instance.new("UIGradient")
+textGradient.Parent = distanceText
+textGradient.Color = ColorSequence.new(
+    Color3.fromRGB(219, 70, 70), 
+    Color3.fromRGB(255, 255, 255)
+)
+
 
 run_service.RenderStepped:Connect(function()
 	do
-		local fov_circle_size = Library.Flags["fov circle size"]:Get()
+		local fov_circle_size = Flags["fov circle size"]
 
 		local head, pos = get_target(fov_circle_size)
 		current_target = head
 		if pos then
 			local head_vec = Vector2.new(pos.X, pos.Y)
 
-			dot.Visible = Library.Flags["prediction dot"]:Get()
-			snapline.Visible = Library.Flags["snapline"]:Get()
+			dot.Visible = Flags["prediction dot"]
+			snapline.Visible = Flags["snapline"]
 			snapline.From = mouse_location
 			snapline.To = head_vec
 			dot.Position = head_vec
@@ -4670,12 +4648,16 @@ run_service.RenderStepped:Connect(function()
 			dot.Visible = false
 			snapline.Visible = false
 		end
-		snapline.Color = Library.Flags["snapline color"]:Get()
-		dot.Color = Library.Flags["prediction dot color"]:Get()
+		snapline.Color = Flags["snapline color"]['Color']
+		snapline.Transparency = Flags["snapline color"]['Transparency']
+
+		dot.Color = Flags["prediction dot color"]['Color']
+		dot.Transparency = Flags["prediction dot color"]['Transparency']
 
 		circle.Radius = fov_circle_size
-		circle.Color = Library.Flags["fov circle color"]:Get()
-		circle.Visible = Library.Flags["fov circle"]:Get()
+		circle.Color = Flags["fov circle color"]['Color']
+		circle.Transparency = Flags["fov circle color"]['Transparency']
+		circle.Visible = Flags["fov circle"]
 		circle.Position = mouse_location
 	end
 	-- other stuff
@@ -4686,16 +4668,16 @@ run_service.RenderStepped:Connect(function()
 			local humanoid = character:FindFirstChild("Humanoid")
 			local root = character:FindFirstChild("HumanoidRootPart")
 
-			if humanoid and Library.Flags["speed enabled"]:Get() and root and Library.Flags["speed key bind"]:Get() then
+			if humanoid and Flags["speed enabled"] and root and Flags["speed key bind"].active then
 				local dir, vel = humanoid.MoveDirection.Unit, root.Velocity
-				local spd = Library.Flags["speed"]:Get()
+				local spd = Flags["speed"]
 
 				if dir.Magnitude > 0 then
 					root.Velocity = Vector3.new(dir.X * spd, vel.Y, dir.Z * spd)
 				end
 			end
 
-			if current_target and Library.Flags["silent aim"]:Get() then
+			if current_target and Flags["silent aim"] then
 				local character_pos = character:GetPivot().Position
 				local hawk = cframe_look_at(character_pos, current_target.Position)
 				local _, y, z = hawk:ToOrientation()
@@ -4703,26 +4685,89 @@ run_service.RenderStepped:Connect(function()
 				character:PivotTo(CFrame.new(character_pos) * CFrame.fromOrientation(0, y, z))
 			end
 
-			if Library.Flags["spiderman"]:Get() and Library.Flags["spiderman key bind"]:Get() then
+			if Flags["spiderman"] and Flags["spiderman key bind"].active then
 				if root then
 					root.Velocity = Vector3.new(root.Velocity.X, 18, root.Velocity.Z)
 				end
 				task.wait()
 			end
-		end
+			if root and Flags["always grounded"] then
+				platform.Position = root.Position - Vector3.new(0, 3.2, 0)
+			else
+				platform.Position = Vector3.new(0, 0, 0)
+			end
 
-       
+		end
+		local MouseDelta = user_input_service:GetMouseDelta()
+        Library.desync.Pitch = math.clamp(Library.desync.Pitch - MouseDelta.Y * 0.3, -80, 80);
+        Library.desync.Yaw = Library.desync.Yaw - MouseDelta.X * 0.3;
+
+        if Flags['Desync Enabled'] and Flags["Desync KeyBind"].active then
+			if Library.desync.DesyncFresh then
+				if Library.desync.OrigHRPCFrame then
+                    local_player.Character.HumanoidRootPart.CFrame = Library.desync.OrigHRPCFrame;
+                end
+				Library.desync.DesyncFresh = false
+			end
+			Library.desynccircle.Circle.Transparency = 0
+			Library.desynccircle.Circle.PointLight.Enabled = true
+
+			camera.CameraType = Enum.CameraType.Scriptable;
+			local CamRot = CFrame.Angles(0, math.rad(Library.desync.Yaw), 0) * CFrame.Angles(math.rad(Library.desync.Pitch), 0, 0);
+            Library.desync.DesyncCframe = CFrame.new(camera.CFrame.Position) * CamRot;
+            camera.CFrame = CFrame.new(camera.CFrame.Position) * CamRot;
+            local MoveDirection = Vector3.zero;
+			if user_input_service:IsKeyDown(Enum.KeyCode.W) then MoveDirection += Vector3.new(0, 0, -1); end
+			if user_input_service:IsKeyDown(Enum.KeyCode.A) then MoveDirection += Vector3.new(-1, 0, 0); end
+			if user_input_service:IsKeyDown(Enum.KeyCode.S) then MoveDirection += Vector3.new(0, 0, 1); end
+			if user_input_service:IsKeyDown(Enum.KeyCode.D) then MoveDirection += Vector3.new(1, 0, 0); end
+			MoveDirection = Vector3.new(MoveDirection.X, 0, MoveDirection.Z);
+
+            if MoveDirection.Magnitude > 0 then
+                local Direction = (camera.CFrame - camera.CFrame.Position):VectorToWorldSpace(MoveDirection.Unit);
+                local NewPosition = camera.CFrame.Position + Direction * Flags['Desync Speed']
+					if Library.desync.OrigCframe then
+					if ((NewPosition - Library.desync.OrigCframe.Position).Magnitude <= Flags['Max Distance Desync']) and Flags['Max Distance Desync Enabled'] then
+						camera.CFrame = camera.CFrame + Direction * Flags['Desync Speed'];
+					end
+				end
+            end
+
+            if local_player.Character and local_player.Character:FindFirstChild('HumanoidRootPart') then
+                local_player.Character.HumanoidRootPart.Anchored = true;
+                local_player.Character.HumanoidRootPart.CFrame = CFrame.new(camera.CFrame.Position);
+            end
+
+            if Library.desync.OrigCframe then
+                local Distance = (camera.CFrame.Position - Library.desync.OrigCframe.Position).Magnitude;
+                if Distance > Flags['Max Distance Desync'] then
+                    Distance = Flags['Max Distance Desync'];
+                end
+				distanceText.Position = UDim2.new(0.5, 0, 0.25, 0)
+                distanceText.Text = string.format("Distance: %.2f", Distance);
+                distanceText.Visible = true;
+            end
+        else
+			Library.desynccircle.Circle.Transparency = 1
+			Library.desynccircle.Circle.PointLight.Enabled = false
+
+			if local_player.Character and local_player.Character:FindFirstChild('HumanoidRootPart') then
+                local_player.Character.HumanoidRootPart.Anchored = false;
+			end
+			camera.CameraType = Enum.CameraType.Custom;
+            distanceText.Visible = false;
+        end
 
 		if quick_stack_funcs and #quick_stack_funcs > 0 then
 			for _, func in quick_stack_funcs do
-				local instant_loot = Library.Flags["instant loot"]:Get()
+				local instant_loot = Flags["instant loot"]
 
 				debug.setconstant(func, 18, instant_loot and 0 or 0.3)
 				debug.setconstant(func, 19, instant_loot and 0 or 0.1)
 			end
 		end
 
-		if Library.Flags["no fog"]:Get() then
+		if Flags["no fog"] then
 			local atmosphere = lighting:FindFirstChild("Atmosphere")
 
 			if atmosphere then
@@ -4730,23 +4775,18 @@ run_service.RenderStepped:Connect(function()
 			end
 		end
 
-		if Library.Flags["ambient"]:Get() then
-			local ambient_color = Library.Flags["ambient color"]:Get()
+		if Flags["ambient"] then
+			local ambient_color = Flags["ambient color"]['Color']
 			lighting.Ambient = ambient_color
 		end
 
-		if Library.Flags["fullbright"]:Get() then
+		if Flags["fullbright"] then
 			lighting.ClockTime = 12
 		end
 	end
-
-	watermark:SetText(
-		string.format("🕰️🏎️📈RevWare.CC | ingame time: %s | %s", lighting:GetAttribute("Stage"), os.date("%a %b %d"))
-	)
 end)
+Notifications:Create({Name = string.format("[🏎️📈RevWare ] loaded in %.1f", tick() - start_tick)})
+Notifications:Create({Name = string.format("[🏎️📈RevWare ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick)})
 
-Library:Notify(string.format("[🕰️🏎️📈RevWare ] loaded in %.1f", tick() - start_tick), 10, Library.Accent)
-
-Library:Notify(string.format("[🕰️🏎️📈RevWare ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick), 10, Library.Accent)
 end
 end
