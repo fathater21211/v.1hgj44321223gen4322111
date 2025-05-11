@@ -494,7 +494,7 @@ bindable_event.Event.Connect = function(_, callback)
 	table.insert(bindable_event.Functions, callback)
 end
 
-loadstring(game:HttpGet("https://dediware.xyz/revwarelib.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/fathater21211/v.1hgj44321223gen4322111/refs/heads/main/UI"))()
 if not isfile("revware/ground.png") then
     writefile('revware/ground.png', game:HttpGet('https://dediware.xyz/ground.png'))
 end
