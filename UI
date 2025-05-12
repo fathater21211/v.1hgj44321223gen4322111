@@ -19,7 +19,7 @@ local color, rgb, hex, hsv, rgbseq, rgbkey, numseq, numkey = Color3.new, Color3.
 
 -- Library init
 getgenv().Library = {
-    Directory = "RevWare",
+    Directory = "Quantum",
     Folders = {
         "/fonts",
         "/configs",
@@ -33,7 +33,7 @@ getgenv().Library = {
 
 themes = {
     preset = {
-        accent = rgb(219, 70, 70),
+        accent = rgb(92, 70, 219),
         window_outline = rgb(0, 0, 0),
         inline = rgb(25, 27, 27),
         background = rgb(17, 19, 19),
@@ -1030,10 +1030,10 @@ end
 --
 
 -- Library element functions
-function Library:Window(properties)
+function Library:skid(properties)
     local Cfg = {
-        Prefix = properties.Prefix or "Rev";
-        Suffix = properties.Suffix or "Ware";
+        Prefix = properties.Prefix or "Quantum.";
+        Suffix = properties.Suffix or "cc";
         Size = properties.Size or dim2(0, 620, 0, 471);
         TabInfo;
         Items = {};
@@ -1162,7 +1162,7 @@ function Library:Window(properties)
             Parent = Items.TitleHolder;
             TextColor3 = themes.preset.accent;
             BorderColor3 = rgb(0, 0, 0);
-            Text = '<font color = "rgb(255,255,255)">' .. Cfg.Prefix .. '</font> ' .. Cfg.Suffix .. '';
+            Text = '<font color = "rgb(255,255,255)">' .. Cfg.Prefix .. '</font>' .. Cfg.Suffix .. '';
             Name = "\0";
             AutomaticSize = Enum.AutomaticSize.XY;
             AnchorPoint = vec2(0, 0.5);
