@@ -494,9 +494,9 @@ bindable_event.Event.Connect = function(_, callback)
 	table.insert(bindable_event.Functions, callback)
 end
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/fathater21211/v.1hgj44321223gen4322111/refs/heads/main/UI"))()
-if not isfile("revware/ground.png") then
-    writefile('revware/ground.png', game:HttpGet('https://dediware.xyz/ground.png'))
+loadstring(game:HttpGet("https://dediware.xyz/justaretardedUILIB.lua"))()
+if not isfile("Quantum/ground.png") then
+    writefile('Quantum/ground.png', game:HttpGet('https://dediware.xyz/grnd.png'))
 end
 
 local mouse_location = user_input_service:GetMouseLocation()
@@ -504,9 +504,7 @@ local current_target
 
 local start_tick = tick()
 
-local Window = Library:Window({
-	Name = "RevWare.CC|Fallen",
-})
+local Window = Library:skid({})
 
 do
 	--// Window / Tabs
@@ -2269,15 +2267,15 @@ end)
 		if group_rank >= 15 then
 			if Flags["detect options"] == "notify" then
 				if player.DisplayName == player.Name then
-					Notifications:Create(string.format("[🏎️📈RevWare ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
+					Notifications:Create(string.format("[🏎️📈Quantum ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
 				else
-					Notifications:Create(string.format("[🏎️📈RevWare ] mod detected! %s (@%s) [%s]", player.DisplayName, player.Name, ranks[group_rank]))
+					Notifications:Create(string.format("[🏎️📈Quantum ] mod detected! %s (@%s) [%s]", player.DisplayName, player.Name, ranks[group_rank]))
 				end
 			else
 				if player.DisplayName == player.Name then
-					local_player:Kick(string.format("[🏎️📈RevWare ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
+					local_player:Kick(string.format("[🏎️📈Quantum ] mod detected! @%s [%s]", player.Name, ranks[group_rank]))
 				else
-					local_player:Kick(string.format("[🏎️📈RevWare ] mod detected! %s (@%s) [%s]",player.DisplayName,player.Name,ranks[group_rank]))
+					local_player:Kick(string.format("[🏎️📈Quantum ] mod detected! %s (@%s) [%s]",player.DisplayName,player.Name,ranks[group_rank]))
 				end
 			end
 		end
@@ -2632,7 +2630,7 @@ local draw_line_2 = function(from, to, color)
 	end
 end
 
-local revware = {
+local Quantum = {
 	target = {
 		entry = nil,
 		part = nil,
@@ -2667,7 +2665,7 @@ raycast_params.FilterType = Enum.RaycastFilterType.Exclude
 raycast_params.IgnoreWater = true
 
 do -- functions
-	function revware.functions:create(class, prop)
+	function Quantum.functions:create(class, prop)
 		local inst = typeof(class) == "string" and Instance.new(class) or class
 		for property, val in prop do
 			inst[property] = val
@@ -2675,7 +2673,7 @@ do -- functions
 		return inst
 	end
 
-	function revware.functions:is_visible(Destination)
+	function Quantum.functions:is_visible(Destination)
 		local part = Destination and Destination.PrimaryPart
 		if not part then
 			return false
@@ -2695,7 +2693,7 @@ do -- functions
 		{ 0.5, 0.5, 0.5 },
 	}
 
-	function revware.functions:custom_bounds(model)
+	function Quantum.functions:custom_bounds(model)
 		local min_bound, max_bound =
 			Vector3.new(math.huge, math.huge, math.huge), Vector3.new(-math.huge, -math.huge, -math.huge)
 		local min_width = 2.5
@@ -2732,7 +2730,7 @@ do -- functions
 		return CFrame.new(center), size, center
 	end
 end
-function revware.functions:get_tool_name(character)
+function Quantum.functions:get_tool_name(character)
 	for _, v in character:GetChildren() do
 		if not v:IsA("Model") then
 			continue
@@ -2762,12 +2760,12 @@ function revware.functions:get_tool_name(character)
 end
 
 do -- fonts
-	function revware.fonts.cache:Register_Font(Name, Weight, Style, Asset)
-		if not isfolder("revware") then
-			makefolder("revware")
+	function Quantum.fonts.cache:Register_Font(Name, Weight, Style, Asset)
+		if not isfolder("Quantum") then
+			makefolder("Quantum")
 		end
-		local asset = "revware/" .. Asset.Id
-		local font = "revware/" .. Name .. ".font"
+		local asset = "Quantum/" .. Asset.Id
+		local font = "Quantum/" .. Name .. ".font"
 		if not isfile(asset) then
 			writefile(asset, Asset.Font)
 		end
@@ -2781,9 +2779,9 @@ do -- fonts
 		return getcustomasset(font)
 	end
 
-	revware.fonts.options = {
+	Quantum.fonts.options = {
 		Graph_35 = Font.new(
-			revware.fonts.cache:Register_Font(
+			Quantum.fonts.cache:Register_Font(
 				"Graph_35",
 				400,
 				"Regular",
@@ -2796,7 +2794,7 @@ do -- fonts
 			)
 		),
 		JuraLight = Font.new(
-			revware.fonts.cache:Register_Font(
+			Quantum.fonts.cache:Register_Font(
 				"JuraLight",
 				400,
 				"Regular",
@@ -2809,7 +2807,7 @@ do -- fonts
 			)
 		),
 		Templeos = Font.new(
-			revware.fonts.cache:Register_Font(
+			Quantum.fonts.cache:Register_Font(
 				"Templeos",
 				400,
 				"normal",
@@ -2822,7 +2820,7 @@ do -- fonts
 			)
 		),
 		ProggyTiny = Font.new(
-			revware.fonts.cache:Register_Font(
+			Quantum.fonts.cache:Register_Font(
 				"ProggyTiny",
 				400,
 				"Regular",
@@ -2865,49 +2863,49 @@ end
 
 local ESP = function(model)
 	local esp_connection
-	local esp_holder = revware.functions:create("ScreenGui", { Parent = gethui(), Name = "esp_holder" })
+	local esp_holder = Quantum.functions:create("ScreenGui", { Parent = gethui(), Name = "esp_holder" })
 
 	local drawings = {
-		name = revware.functions:create(
+		name = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = revware.fonts.options.ProggyTiny,
+				FontFace = Quantum.fonts.options.ProggyTiny,
 				TextSize = 9,
 				Text = model.Name,
 			}
 		),
-		distance = revware.functions:create(
+		distance = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = revware.fonts.options.ProggyTiny,
+				FontFace = Quantum.fonts.options.ProggyTiny,
 				TextSize = 9,
 			}
 		),
-		weapon = revware.functions:create(
+		weapon = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
-				FontFace = revware.fonts.options.ProggyTiny,
+				FontFace = Quantum.fonts.options.ProggyTiny,
 				TextSize = 9,
 			}
 		),
-		HealthText = revware.functions:create(
+		HealthText = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				TextXAlignment = Enum.TextXAlignment.Center,
-				FontFace = revware.fonts.options.ProggyTiny,
+				FontFace = Quantum.fonts.options.ProggyTiny,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -2915,13 +2913,13 @@ local ESP = function(model)
 				TextStrokeColor3 = Color3.new(0, 0, 0),
 			}
 		),
-		Flag1 = revware.functions:create(
+		Flag1 = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				Text = "",
 				TextColor3 = Color3.new(0, 0.85, 0),
-				FontFace = revware.fonts.options.ProggyTiny,
+				FontFace = Quantum.fonts.options.ProggyTiny,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -2930,12 +2928,12 @@ local ESP = function(model)
 				TextXAlignment = Enum.TextXAlignment.Right,
 			}
 		),
-		Flag2 = revware.functions:create(
+		Flag2 = Quantum.functions:create(
 			"TextLabel",
 			{
 				Parent = esp_holder,
 				Text = "",
-				FontFace = revware.fonts.options.JuraLight,
+				FontFace = Quantum.fonts.options.JuraLight,
 				TextSize = 9,
 				BackgroundTransparency = 1,
 				TextStrokeTransparency = 0,
@@ -2945,7 +2943,7 @@ local ESP = function(model)
 			}
 		),
 
-		BehindHealthbar = revware.functions:create(
+		BehindHealthbar = Quantum.functions:create(
 			"Frame",
 			{
 				Parent = esp_holder,
@@ -2956,7 +2954,7 @@ local ESP = function(model)
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
 			}
 		),
-		Healthbar = revware.functions:create(
+		Healthbar = Quantum.functions:create(
 			"Frame",
 			{
 				Parent = esp_holder,
@@ -2965,17 +2963,17 @@ local ESP = function(model)
 				BorderSizePixel = 0,
 			}
 		),
-		HealthbarGradient = revware.functions:create("UIGradient", { Enabled = true, Rotation = -90 }),
+		HealthbarGradient = Quantum.functions:create("UIGradient", { Enabled = true, Rotation = -90 }),
 
-		Box = revware.functions:create(
+		Box = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, BackgroundTransparency = 1, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = -999 }
 		),
-		Box2 = revware.functions:create(
+		Box2 = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, BackgroundTransparency = 1, BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 999 }
 		),
-		Outline = revware.functions:create(
+		Outline = Quantum.functions:create(
 			"UIStroke",
 			{
 				Color = Color3.fromRGB(0, 0, 0),
@@ -2985,127 +2983,127 @@ local ESP = function(model)
 				Enabled = true,
 			}
 		),
-		Outline2 = revware.functions:create(
+		Outline2 = Quantum.functions:create(
 			"UIStroke",
 			{ Thickness = 1, Enabled = true, LineJoinMode = Enum.LineJoinMode.Miter }
 		),
 
-		LeftTopFix = revware.functions:create(
+		LeftTopFix = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		RightTopFix = revware.functions:create(
+		RightTopFix = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		BottomSideFix = revware.functions:create(
+		BottomSideFix = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		BottomRightSideFix = revware.functions:create(
+		BottomRightSideFix = Quantum.functions:create(
 			"Frame",
 			{ Parent = esp_holder, Size = UDim2.new(0, 1, 0, 6), ZIndex = 999 }
 		),
-		LeftTop = revware.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
-		LeftSide = revware.functions:create("Frame", { Parent = esp_holder }),
-		RightTop = revware.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
-		RightSide = revware.functions:create("Frame", { Parent = esp_holder }),
-		BottomSide = revware.functions:create("Frame", { Parent = esp_holder }),
-		BottomDown = revware.functions:create("Frame", { Parent = esp_holder }),
-		BottomRightSide = revware.functions:create("Frame", { Parent = esp_holder }),
-		BottomRightDown = revware.functions:create("Frame", { Parent = esp_holder }),
-		skeleton = revware.functions:create("Frame", {
+		LeftTop = Quantum.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
+		LeftSide = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		RightTop = Quantum.functions:create("Frame", { Parent = esp_holder, ZIndex = 3 }),
+		RightSide = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		BottomSide = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		BottomDown = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		BottomRightSide = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		BottomRightDown = Quantum.functions:create("Frame", { Parent = esp_holder }),
+		skeleton = Quantum.functions:create("Frame", {
 			Parent = esp_holder,
 			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 		}),
 	}
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "head",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "torso1",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "torso2",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm1",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm2",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "larm3",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm1",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm2",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rarm3",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg1",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg2",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "lleg3",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg1",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg2",
 		BorderSizePixel = 0,
 	})
 
-	revware.functions:create("Frame", {
+	Quantum.functions:create("Frame", {
 		Parent = drawings.skeleton,
 		Name = "rleg3",
 		BorderSizePixel = 0,
@@ -3187,7 +3185,7 @@ local ESP = function(model)
 				local root = char_model and char_model:FindFirstChild("HumanoidRootPart")
 				local humanoid = char_model and char_model:WaitForChild("Humanoid")
 				if humanoid.Health > 0 then
-					local _, size, position = revware.functions:custom_bounds(char_model)
+					local _, size, position = Quantum.functions:custom_bounds(char_model)
 					local max_distance
 
 					local measurement_type = Flags["distance measurement"]
@@ -3448,7 +3446,7 @@ local ESP = function(model)
 									or weapon_esp_color,
 								0.04
 							)
-							drawings.weapon.Text = revware.functions:get_tool_name(char_model)
+							drawings.weapon.Text = Quantum.functions:get_tool_name(char_model)
 						else
 							drawings.weapon.Visible = false
 						end
@@ -3588,7 +3586,7 @@ local ESP = function(model)
 							drawings.Flag1.Visible = true
 							drawings.Flag2.Visible = true
 
-							if revware.functions:is_visible(char_model) then
+							if Quantum.functions:is_visible(char_model) then
 								drawings.Flag1.Visible = true
 								drawings.Flag1.Text = "Vis"
 							else
@@ -3967,7 +3965,7 @@ local add_instance = function(object, data)
 	text.TextStrokeColor3 = Color3.new(0, 0, 0)
 	text.TextStrokeTransparency = 0.8
 	--Font.fromId(12187371840)
-	text.FontFace = revware.fonts.options.ProggyTiny
+	text.FontFace = Quantum.fonts.options.ProggyTiny
 	text.Parent = billboard
 
 	local draw = setmetatable({
@@ -4619,7 +4617,7 @@ distanceText.TextColor3 = Color3.fromRGB(255, 255, 255)
 distanceText.TextStrokeTransparency = 0.5
 distanceText.BackgroundTransparency = 1
 distanceText.Visible = false
-distanceText.FontFace = revware.fonts.options.ProggyTiny
+distanceText.FontFace = Quantum.fonts.options.ProggyTiny
 distanceText.Parent = core_gui
 
 local textGradient = Instance.new("UIGradient")
@@ -4785,8 +4783,8 @@ run_service.RenderStepped:Connect(function()
 		end
 	end
 end)
-Notifications:Create({Name = string.format("[🏎️📈RevWare ] loaded in %.1f", tick() - start_tick)})
-Notifications:Create({Name = string.format("[🏎️📈RevWare ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick)})
+Notifications:Create({Name = string.format("[🏎️📈Quantum ] loaded in %.1f", tick() - start_tick)})
+Notifications:Create({Name = string.format("[🏎️📈Quantum ] NEW UPDATE IN EXPLOITS, UNDERGROUND", tick() - start_tick)})
 
 end
 end
